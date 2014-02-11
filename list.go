@@ -152,3 +152,18 @@ func (l *List) Append(el interface{}) *List {
 		prev = cur
 	}
 }
+
+// Returns a reversed copy of the List. Completes in O(N) time.
+func (l *List) Reverse() *List {
+	nl := NewList()
+	rest := Seq(l)
+	var el interface{}
+	var ok bool
+	for {
+		el, rest, ok = rest.FirstRest()
+		if !ok {
+			return nl
+		}
+		nl = nl.Prepend(el)
+	}
+}

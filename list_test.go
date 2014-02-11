@@ -160,3 +160,26 @@ func TestAppend(t *T) {
 		t.Fatalf("New degenerate slice wrong: %v", nl.ToSlice())
 	}
 }
+
+// Test reversing a List
+func TestReverse(t *T) {
+	// Normal case
+	l := NewList(3, 2, 1)
+	nl := l.Reverse()
+	if !intSlicesEq(l.ToSlice(), []interface{}{3, 2, 1}) {
+		t.Fatalf("Original slice changed: %v", l.ToSlice())
+	}
+	if !intSlicesEq(nl.ToSlice(), []interface{}{1, 2, 3}) {
+		t.Fatalf("New slice wrong: %v", nl.ToSlice())
+	}
+
+	// Degenerate case
+	l = NewList()
+	nl = l.Reverse()
+	if !intSlicesEq(l.ToSlice(), []interface{}{}) {
+		t.Fatalf("Degenerate slice changed: %v", l.ToSlice())
+	}
+	if !intSlicesEq(nl.ToSlice(), []interface{}{}) {
+		t.Fatalf("New degenerate slice wrong: %v", nl.ToSlice())
+	}
+}
