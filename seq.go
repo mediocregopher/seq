@@ -105,3 +105,19 @@ func Reduce(fn ReduceFn, acc interface{}, s Seq) interface{} {
 	}
 	return acc
 }
+
+// Returns the first element in Seq for which fn returns true, or nil. The
+// returned boolean indicates whether or not a matching element was found
+func Any(fn func(el interface{}) bool, s Seq) (interface{}, bool) {
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			if fn(el) {
+				return el, true
+			}
+		} else {
+			return nil, false
+		}
+	}
+}

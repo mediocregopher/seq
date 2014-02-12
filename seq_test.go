@@ -70,3 +70,41 @@ func TestReduce(t *T) {
 		t.Fatalf("Degenerate value wrong: %v", r)
 	}
 }
+
+// Test the Any function
+func TestAny(t *T) {
+	// Normal cases
+	int1 := []interface{}{1, 2, 3, 4}
+	int2 := []interface{}{1, 2, 3}
+	l1 := NewList(int1...)
+	l2 := NewList(int2...)
+	fn := func(el interface{}) bool {
+		return el.(int) > 3
+	}
+
+	r, ok := Any(fn, l1)
+	if !intSlicesEq(l1.ToSlice(), int1) {
+		t.Fatalf("Original slice changed: %v", l1.ToSlice())
+	}
+	if r != 4 || !ok {
+		t.Fatalf("Returned values wrong: %v, %v", r, ok)
+	}
+
+	r, ok = Any(fn, l2)
+	if !intSlicesEq(l2.ToSlice(), int2) {
+		t.Fatalf("Original slice changed: %v", l2.ToSlice())
+	}
+	if r != nil || ok {
+		t.Fatalf("Returned values wrong: %v, %v", r, ok)
+	}
+
+	// Degenerate cases
+	l := NewList()
+	r, ok = Any(fn, l)
+	if !intSlicesEq(l.ToSlice(), []interface{}{}) {
+		t.Fatalf("Degenerate slice changed: %v", l.ToSlice())
+	}
+	if r != nil || ok {
+		t.Fatalf("Degenerate values wrong: %v, %v", r, ok)
+	}
+}
