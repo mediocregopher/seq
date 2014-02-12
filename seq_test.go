@@ -117,3 +117,26 @@ func TestFilter(t *T) {
 	assertEmpty(l, t)
 	assertEmpty(r, t)
 }
+
+// Test Flatten-ing of Seqa
+func TestFlatten(t *T) {
+	// Normal case
+	intl1 := []interface{}{0, 1, 2}
+	intl2 := []interface{}{3, 4, 5}
+	l1 := NewList(intl1...)
+	l2 := NewList(intl2...)
+	blank := NewList()
+	intl := []interface{}{-1, l1, l2, 6, blank, 7}
+	l := NewList(intl...)
+	nl := Flatten(l)
+	assertSeqContents(l1, intl1, t)
+	assertSeqContents(l2, intl2, t)
+	assertEmpty(blank, t)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{-1, 0, 1, 2, 3, 4, 5, 6, 7}, t)
+
+	// Degenerate case
+	nl = Flatten(blank)
+	assertEmpty(blank, t)
+	assertEmpty(nl, t)
+}

@@ -122,3 +122,23 @@ func Filter(fn func(el interface{}) bool, s Seq) Seq {
 		}
 	}
 }
+
+// Flattens the given Seq into a single, one-dimensional Seq. Completes in
+// O(N*M) time, where N is the number of elements in the Seq and M is how large
+// the Seqs in those elements actually are.
+func Flatten(s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			if els, ok := el.(Seq); ok {
+				l = l.PrependSeq(Reverse(els))
+			} else {
+				l = l.Prepend(el)
+			}
+		} else {
+			return Reverse(l)
+		}
+	}
+}
