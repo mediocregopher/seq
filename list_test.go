@@ -4,18 +4,6 @@ import (
 	. "testing"
 )
 
-func intSlicesEq(a, b []interface{}) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 // Test creating a list and calling the Seq interface methods on it
 func TestListSeq(t *T) {
 	ints := []interface{}{1, "a", 5.0}
@@ -27,159 +15,120 @@ func TestListSeq(t *T) {
 	// Testing FirstRest, Size, and ToSlice
 	sl := Seq(l)
 	for i := range ints {
-		if sl.Size() != intsl-uint64(i) {
-			t.Fatalf("Size wrong: %v", sl.Size())
-		} else if !intSlicesEq(sl.ToSlice(), ints[i:]) {
-			t.Fatalf("ToSlice wrong: %v", sl.ToSlice())
-		}
+		assertValue(sl.Size(), intsl-uint64(i), t)
+		assertSeqContents(sl, ints[i:], t)
 
 		first, rest, ok := sl.FirstRest()
-		if !ok {
-			t.Fatalf("ok wrong: %v", ok)
-		} else if first != ints[i] {
-			t.Fatalf("first wrong: %v", first)
-		}
+		assertValue(ok, true, t)
+		assertValue(first, ints[i], t)
+
 		sl = rest
 	}
 
-	// sl should be empty at this point
+	// sl should be empty at this point. We use nilpointer because checking a
+	// nil pointer against nil after both have been wrapped in an interface{}
+	// (as happens when passed to assertValue) causes equality to not work.
 	l = sl.ToList()
-	if l.Size() != 0 {
-		t.Fatalf("Empty size wrong: %v", l.Size())
-	} else if l.el != nil {
-		t.Fatalf("Empty el wrong: %v", l.el)
-	} else if l.next != nil {
-		t.Fatalf("Empty next wrong: %v", l.next)
-	} else if len(l.ToSlice()) != 0 {
-		t.Fatalf("Empty toslice wrong: %v", l.ToSlice())
-	}
+	var nilpointer *List
+	assertEmpty(l, t)
+	assertValue(l.el, nil, t)
+	assertValue(l.next, nilpointer, t)
+	assertValue(len(l.ToSlice()), 0, t)
 
-	// Testing creation of empty l
+	// Testing creation of empty List. We dereference the pointers so that we're
+	// testing the actual values inside the List structs.
 	emptyl := NewList()
-	if *emptyl != *l {
-		t.Fatalf("Created empty wrong: %v", emptyl)
-	}
+	assertValue(*emptyl, *l, t)
 }
 
 // Test the string representation of a List
 func TestStringSeq(t *T) {
 	l := NewList(0, 1, 2, 3)
-	if l.String() != "( 0 1 2 3 )" {
-		t.Fatalf("String is wrong: %v", l.String())
-	}
+	assertValue(l.String(), "( 0 1 2 3 )", t)
 
-	nl := NewList(0, 1, 2, NewList(3, 4), 5, NewList(6, 7, 8))
-	if nl.String() != "( 0 1 2 ( 3 4 ) 5 ( 6 7 8 ) )" {
-		t.Fatalf("String is wrong: %v", nl.String())
-	}
+	l = NewList(0, 1, 2, NewList(3, 4), 5, NewList(6, 7, 8))
+	assertValue(l.String(), "( 0 1 2 ( 3 4 ) 5 ( 6 7 8 ) )", t)
 }
 
 // Test prepending an element to the beginning of a list
 func TestPrepend(t *T) {
-	l := NewList(3, 2, 1, 0)
+	// Normal case
+	intl := []interface{}{3, 2, 1, 0}
+	l := NewList(intl...)
 	nl := l.Prepend(4)
-	if !intSlicesEq(l.ToSlice(), []interface{}{3, 2, 1, 0}) {
-		t.Fatalf("Original slice changed: %v", l.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{4, 3, 2, 1, 0}) {
-		t.Fatalf("New slice wrong: %v", nl.ToSlice())
-	}
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{4, 3, 2, 1, 0}, t)
 
 	// Degenerate case
 	l = NewList()
 	nl = l.Prepend(0)
-	if !intSlicesEq(nl.ToSlice(), []interface{}{0}) {
-		t.Fatalf("New degenerate slice wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(l, t)
+	assertSeqContents(nl, []interface{}{0}, t)
 }
 
 // Test prepending a Seq to the beginning of a list
 func TestPrependSeq(t *T) {
-	int1 := []interface{}{3, 4}
-	int2 := []interface{}{0, 1, 2}
-	l1 := NewList(int1...)
-	l2 := NewList(int2...)
+	//Normal case
+	intl1 := []interface{}{3, 4}
+	intl2 := []interface{}{0, 1, 2}
+	l1 := NewList(intl1...)
+	l2 := NewList(intl2...)
 	nl := l1.PrependSeq(l2)
-
-	if !intSlicesEq(l1.ToSlice(), int1) {
-		t.Fatalf("First list changed: %v", l1.ToSlice())
-	}
-	if !intSlicesEq(l2.ToSlice(), int2) {
-		t.Fatalf("Second list changed: %v", l2.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{0, 1, 2, 3, 4}) {
-		t.Fatalf("New list wrong: %v", nl.ToSlice())
-	}
+	assertSeqContents(l1, intl1, t)
+	assertSeqContents(l2, intl2, t)
+	assertSeqContents(nl, []interface{}{0, 1, 2, 3, 4}, t)
 
 	// Degenerate cases
 	blank1 := NewList()
 	blank2 := NewList()
-
 	nl = blank1.PrependSeq(blank2)
-	if !intSlicesEq(nl.ToSlice(), []interface{}{}) {
-		t.Fatalf("Degenerate blank/blank case wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(blank1, t)
+	assertEmpty(blank2, t)
+	assertEmpty(nl, t)
 
 	nl = blank1.PrependSeq(l1)
-	if !intSlicesEq(nl.ToSlice(), int1) {
-		t.Fatalf("Degenerate blank/l1 case wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(blank1, t)
+	assertSeqContents(nl, intl1, t)
 
 	nl = l1.PrependSeq(blank1)
-	if !intSlicesEq(nl.ToSlice(), int1) {
-		t.Fatalf("Degenerate l1/blank case wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(blank1, t)
+	assertSeqContents(nl, intl1, t)
 }
 
 // Test appending to the end of a List
 func TestAppend(t *T) {
 	// Normal case
-	l := NewList(3, 2, 1)
+	intl := []interface{}{3, 2, 1}
+	l := NewList(intl...)
 	nl := l.Append(0)
-	if !intSlicesEq(l.ToSlice(), []interface{}{3, 2, 1}) {
-		t.Fatalf("Original slice changed: %v", l.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{3, 2, 1, 0}) {
-		t.Fatalf("New slice wrong: %v", nl.ToSlice())
-	}
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{3, 2, 1, 0}, t)
 
 	// Edge case (algorithm gets weird here)
 	l = NewList(1)
 	nl = l.Append(0)
-	if !intSlicesEq(l.ToSlice(), []interface{}{1}) {
-		t.Fatalf("Original edge-case slice changed: %v", l.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{1, 0}) {
-		t.Fatalf("New edge-case slice wrong: %v", nl.ToSlice())
-	}
+	assertSeqContents(l, []interface{}{1}, t)
+	assertSeqContents(nl, []interface{}{1, 0}, t)
 
 	// Degenerate case
 	l = NewList()
 	nl = l.Append(0)
-	if !intSlicesEq(nl.ToSlice(), []interface{}{0}) {
-		t.Fatalf("New degenerate slice wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(l, t)
+	assertSeqContents(nl, []interface{}{0}, t)
 }
 
 // Test reversing a List
 func TestReverse(t *T) {
 	// Normal case
-	l := NewList(3, 2, 1)
+	intl := []interface{}{3, 2, 1}
+	l := NewList(intl...)
 	nl := l.Reverse()
-	if !intSlicesEq(l.ToSlice(), []interface{}{3, 2, 1}) {
-		t.Fatalf("Original slice changed: %v", l.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{1, 2, 3}) {
-		t.Fatalf("New slice wrong: %v", nl.ToSlice())
-	}
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{1, 2, 3}, t)
 
 	// Degenerate case
 	l = NewList()
 	nl = l.Reverse()
-	if !intSlicesEq(l.ToSlice(), []interface{}{}) {
-		t.Fatalf("Degenerate slice changed: %v", l.ToSlice())
-	}
-	if !intSlicesEq(nl.ToSlice(), []interface{}{}) {
-		t.Fatalf("New degenerate slice wrong: %v", nl.ToSlice())
-	}
+	assertEmpty(l, t)
+	assertEmpty(nl, t)
 }

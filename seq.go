@@ -1,10 +1,5 @@
 package seq
 
-import (
-	"bytes"
-	"fmt"
-)
-
 // The general interface which most operations will actually operate on. Acts as
 // an interface onto any data structure
 type Seq interface {
@@ -34,32 +29,6 @@ type Seq interface {
 	// Returns a string representation of the element. This is useful for
 	// debugging, but not much else
 	String() string
-}
-
-// Turns a Seq into a string, with each element separated by a space and with a
-// dstart and dend wrapping the whole thing
-func toString(s Seq, dstart, dend string) string {
-	buf := bytes.NewBufferString(dstart)
-	buf.WriteString(" ")
-	var el interface{}
-	var strel fmt.Stringer
-	var rest Seq
-	var ok bool
-	for {
-		if el, rest, ok = s.FirstRest(); ok {
-			if strel, ok = el.(fmt.Stringer); ok {
-				buf.WriteString(strel.String())
-			} else {
-				buf.WriteString(fmt.Sprintf("%v", el))
-			}
-			buf.WriteString(" ")
-			s = rest
-		} else {
-			break
-		}
-	}
-	buf.WriteString(dend)
-	return buf.String()
 }
 
 // Returns a Seq consisting of the result of applying fn to each element in the
