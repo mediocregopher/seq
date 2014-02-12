@@ -4,6 +4,21 @@ import (
 	. "testing"
 )
 
+// Asserts that the given list is properly formed and has all of its size fields
+// filled in correctly
+func assertSaneList(l *List, t *T) {
+	if l.Size() == 0 {
+		var nilpointer *List
+		assertValue(l.next, nilpointer, t)
+		assertValue(l.el, nil, t)
+		return
+	}
+
+	size := l.Size()
+	assertValue(l.next.Size(), size - 1, t)
+	assertSaneList(l.next, t)
+}
+
 // Test creating a list and calling the Seq interface methods on it
 func TestListSeq(t *T) {
 	ints := []interface{}{1, "a", 5.0}
@@ -15,6 +30,7 @@ func TestListSeq(t *T) {
 	// Testing FirstRest, Size, and ToSlice
 	sl := Seq(l)
 	for i := range ints {
+		assertSaneList(sl.ToList(), t)
 		assertValue(sl.Size(), intsl-uint64(i), t)
 		assertSeqContents(sl, ints[i:], t)
 
@@ -56,6 +72,8 @@ func TestPrepend(t *T) {
 	intl := []interface{}{3, 2, 1, 0}
 	l := NewList(intl...)
 	nl := l.Prepend(4)
+	assertSaneList(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{4, 3, 2, 1, 0}, t)
 
@@ -63,6 +81,7 @@ func TestPrepend(t *T) {
 	l = NewList()
 	nl = l.Prepend(0)
 	assertEmpty(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(nl, []interface{}{0}, t)
 }
 
@@ -74,6 +93,9 @@ func TestPrependSeq(t *T) {
 	l1 := NewList(intl1...)
 	l2 := NewList(intl2...)
 	nl := l1.PrependSeq(l2)
+	assertSaneList(l1, t)
+	assertSaneList(l2, t)
+	assertSaneList(nl, t)
 	assertSeqContents(l1, intl1, t)
 	assertSeqContents(l2, intl2, t)
 	assertSeqContents(nl, []interface{}{0, 1, 2, 3, 4}, t)
@@ -88,10 +110,12 @@ func TestPrependSeq(t *T) {
 
 	nl = blank1.PrependSeq(l1)
 	assertEmpty(blank1, t)
+	assertSaneList(nl, t)
 	assertSeqContents(nl, intl1, t)
 
 	nl = l1.PrependSeq(blank1)
 	assertEmpty(blank1, t)
+	assertSaneList(nl, t)
 	assertSeqContents(nl, intl1, t)
 }
 
@@ -101,12 +125,16 @@ func TestAppend(t *T) {
 	intl := []interface{}{3, 2, 1}
 	l := NewList(intl...)
 	nl := l.Append(0)
+	assertSaneList(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{3, 2, 1, 0}, t)
 
 	// Edge case (algorithm gets weird here)
 	l = NewList(1)
 	nl = l.Append(0)
+	assertSaneList(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(l, []interface{}{1}, t)
 	assertSeqContents(nl, []interface{}{1, 0}, t)
 
@@ -114,6 +142,7 @@ func TestAppend(t *T) {
 	l = NewList()
 	nl = l.Append(0)
 	assertEmpty(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(nl, []interface{}{0}, t)
 }
 
@@ -123,6 +152,8 @@ func TestReverse(t *T) {
 	intl := []interface{}{3, 2, 1}
 	l := NewList(intl...)
 	nl := l.Reverse()
+	assertSaneList(l, t)
+	assertSaneList(nl, t)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{1, 2, 3}, t)
 
