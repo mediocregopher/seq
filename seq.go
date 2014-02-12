@@ -77,3 +77,31 @@ func Map(fn func(interface{}) interface{}, s Seq) Seq {
 	}
 	return l.Reverse()
 }
+
+// A function used in a reduce. The first argument is the accumulator, the
+// second is an element from the Seq being reduced over. The ReduceFn returns
+// the accumulator to be used in the next iteration, wherein that new
+// accumulator will be called alongside the next element in the Seq. ReduceFn
+// also returns a boolean representing whether or not the reduction should stop
+// at this step. If true, the reductions will stop and any remaining elements in
+// the Seq will be ignored.
+type ReduceFn func(acc, el interface{}) (interface{}, bool)
+
+// Reduces over the given Seq using ReduceFn, with acc as the first accumulator
+// value in the reduce. See ReduceFn for more details on how it works. The
+// return value is the result of the reduction.
+func Reduce(fn ReduceFn, acc interface{}, s Seq) interface{} {
+	var el interface{}
+	var ok, stop bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			acc, stop = fn(acc, el)
+			if stop {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	return acc
+}
