@@ -61,3 +61,19 @@ func toString(s Seq, dstart, dend string) string {
 	buf.WriteString(dend)
 	return buf.String()
 }
+
+// Returns a Seq consisting of the result of applying fn to each element in the
+// given Seq.
+func Map(fn func(interface{}) interface{}, s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			l = l.Prepend(fn(el))
+		} else {
+			break
+		}
+	}
+	return l.Reverse()
+}
