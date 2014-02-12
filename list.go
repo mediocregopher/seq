@@ -54,19 +54,17 @@ func (l *List) FirstRest() (interface{}, Seq, bool) {
 // Implementation of ToSlice for Seq interface. Completes in O(N) time.
 func (l *List) ToSlice() []interface{} {
 	ret := make([]interface{}, l.Size())
-	cur := l
+	s := Seq(l)
 	i := 0
 	var el interface{}
-	var rest Seq
 	var ok bool
 	for {
-		el, rest, ok = cur.FirstRest()
-		if !ok {
+		if el, s, ok = s.FirstRest(); ok {
+			ret[i] = el
+			i++
+		} else {
 			return ret
 		}
-		ret[i] = el
-		cur = rest.(*List)
-		i++
 	}
 }
 
@@ -103,24 +101,23 @@ func (l *List) PrependSeq(s Seq) *List {
 	//Actual work, both the List and the Seq have elements
 	var first, cur, prev *List
 	var el interface{}
-	var rest Seq
 	var ok bool
 	i := ssize
 	for {
-		el, rest, ok = s.FirstRest()
-		if !ok {
+		if el, s, ok = s.FirstRest(); ok {
+			cur = &List{el, i + lsize, nil}
+			if first == nil {
+				first = cur
+			}
+			if prev != nil {
+				prev.next = cur
+			}
+			prev = cur
+			i--
+		} else {
 			prev.next = l
 			return first
 		}
-		cur = &List{el, i + lsize, nil}
-		if first == nil {
-			first = cur
-		}
-		if prev != nil {
-			prev.next = cur
-		}
-		prev = cur
-		s = rest
 	}
 }
 
@@ -156,14 +153,14 @@ func (l *List) Append(el interface{}) *List {
 // Returns a reversed copy of the List. Completes in O(N) time.
 func (l *List) Reverse() *List {
 	nl := NewList()
-	rest := Seq(l)
+	s := Seq(l)
 	var el interface{}
 	var ok bool
 	for {
-		el, rest, ok = rest.FirstRest()
-		if !ok {
+		if el, s, ok = s.FirstRest(); ok {
+			nl = nl.Prepend(el)
+		} else {
 			return nl
 		}
-		nl = nl.Prepend(el)
 	}
 }
