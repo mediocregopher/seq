@@ -108,3 +108,31 @@ func TestAny(t *T) {
 		t.Fatalf("Degenerate values wrong: %v, %v", r, ok)
 	}
 }
+
+// Test the Filter function
+func TestFilter(t *T) {
+	// Normal case
+	intl := []interface{}{1, 2, 3, 4, 5}
+	l := NewList(intl...)
+	fn := func(el interface{}) bool {
+		return el.(int) % 2 != 0
+	}
+
+	r := Filter(fn, l)
+	if !intSlicesEq(l.ToSlice(), intl) {
+		t.Fatalf("Original slice changed: %v", l.ToSlice())
+	}
+	if !intSlicesEq(r.ToSlice(), []interface{}{1, 3, 5}) {
+		t.Fatalf("Returned slice wrong: %v", r.ToSlice())
+	}
+
+	// Degenerate cases
+	l = NewList()
+	r = Filter(fn, l)
+	if !intSlicesEq(l.ToSlice(), []interface{}{}) {
+		t.Fatalf("Degenerate slice changed: %v", l.ToSlice())
+	}
+	if len(r.ToSlice()) != 0 {
+		t.Fatalf("Degenerate return wrong: %v", r.ToSlice())
+	}
+}

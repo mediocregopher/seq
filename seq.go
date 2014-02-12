@@ -121,3 +121,20 @@ func Any(fn func(el interface{}) bool, s Seq) (interface{}, bool) {
 		}
 	}
 }
+
+// Returns a Seq containing all elements in the given Seq for which fn returned
+// true.
+func Filter(fn func(el interface{}) bool, s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			if fn(el) {
+				l = l.Prepend(el)
+			}
+		} else {
+			return l.Reverse()
+		}
+	}
+}
