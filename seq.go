@@ -1,8 +1,8 @@
 package seq
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 )
 
 // The general interface which most operations will actually operate on. Acts as

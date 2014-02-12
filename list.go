@@ -7,7 +7,7 @@ package seq
 // can actually share nodes with the new Seq (if both are Lists), thereby saving
 // memory and copies.
 type List struct {
-	el 	 interface{}
+	el   interface{}
 	size uint64
 	next *List
 }
@@ -22,7 +22,7 @@ func NewList(els ...interface{}) *List {
 	}
 
 	var first, cur, prev *List
-	for i := elsl; i>0; i-- {
+	for i := elsl; i > 0; i-- {
 		cur = &List{els[elsl-i], i, nil}
 		if first == nil {
 			first = cur
@@ -83,7 +83,7 @@ func (l *List) String() string {
 // Prepends the given element to the front of the list, returning a copy of the
 // new list. Completes in O(1) time.
 func (l *List) Prepend(el interface{}) *List {
-	return &List{el, l.size+1, l}
+	return &List{el, l.size + 1, l}
 }
 
 // Prepends the argument Seq to the beginning of the callee List, returning a
@@ -112,7 +112,7 @@ func (l *List) PrependSeq(s Seq) *List {
 			prev.next = l
 			return first
 		}
-		cur = &List{el, i+lsize, nil}
+		cur = &List{el, i + lsize, nil}
 		if first == nil {
 			first = cur
 		}
@@ -141,7 +141,7 @@ func (l *List) Append(el interface{}) *List {
 			prev.next = NewList(el)
 			return first
 		}
-		cur = &List{l.el, l.size+1, nil}
+		cur = &List{l.el, l.size + 1, nil}
 		if first == nil {
 			first = cur
 		}

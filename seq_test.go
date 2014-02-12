@@ -18,9 +18,9 @@ func TestMap(t *T) {
 		t.Fatalf("Original slice changed: %v", l.ToSlice())
 	}
 	if !intSlicesEq(nl.ToSlice(), intnl) {
-		t.Fatal("New slice wrong: %v", nl.ToSlice())
+		t.Fatalf("New slice wrong: %v", nl.ToSlice())
 	}
-	
+
 	// Degenerate case
 	l = NewList()
 	nl = Map(fn, l)

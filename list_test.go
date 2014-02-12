@@ -27,13 +27,13 @@ func TestListSeq(t *T) {
 	// Testing FirstRest, Size, and ToSlice
 	sl := Seq(l)
 	for i := range ints {
-		if sl.Size() != intsl - uint64(i) {
+		if sl.Size() != intsl-uint64(i) {
 			t.Fatalf("Size wrong: %v", sl.Size())
 		} else if !intSlicesEq(sl.ToSlice(), ints[i:]) {
 			t.Fatalf("ToSlice wrong: %v", sl.ToSlice())
 		}
 
-		first, rest, ok := sl.FirstRest();
+		first, rest, ok := sl.FirstRest()
 		if !ok {
 			t.Fatalf("ok wrong: %v", ok)
 		} else if first != ints[i] {
