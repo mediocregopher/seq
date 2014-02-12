@@ -63,7 +63,7 @@ func toString(s Seq, dstart, dend string) string {
 }
 
 // Returns a Seq consisting of the result of applying fn to each element in the
-// given Seq.
+// given Seq. Completes in O(N) time.
 func Map(fn func(interface{}) interface{}, s Seq) Seq {
 	l := NewList()
 	var el interface{}
@@ -89,7 +89,7 @@ type ReduceFn func(acc, el interface{}) (interface{}, bool)
 
 // Reduces over the given Seq using ReduceFn, with acc as the first accumulator
 // value in the reduce. See ReduceFn for more details on how it works. The
-// return value is the result of the reduction.
+// return value is the result of the reduction. Completes in O(N) time.
 func Reduce(fn ReduceFn, acc interface{}, s Seq) interface{} {
 	var el interface{}
 	var ok, stop bool
@@ -107,7 +107,8 @@ func Reduce(fn ReduceFn, acc interface{}, s Seq) interface{} {
 }
 
 // Returns the first element in Seq for which fn returns true, or nil. The
-// returned boolean indicates whether or not a matching element was found
+// returned boolean indicates whether or not a matching element was found.
+// Completes in O(N) time.
 func Any(fn func(el interface{}) bool, s Seq) (interface{}, bool) {
 	var el interface{}
 	var ok bool
@@ -123,7 +124,7 @@ func Any(fn func(el interface{}) bool, s Seq) (interface{}, bool) {
 }
 
 // Returns a Seq containing all elements in the given Seq for which fn returned
-// true.
+// true. Completes in O(N) time.
 func Filter(fn func(el interface{}) bool, s Seq) Seq {
 	l := NewList()
 	var el interface{}
