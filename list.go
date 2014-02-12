@@ -164,3 +164,20 @@ func (l *List) Reverse() *List {
 		}
 	}
 }
+
+// Returns the nth index element (starting at 0), with bool being false if i is
+// out of bounds. Completes in O(N) time.
+func (l *List) Nth(i uint64) (interface{}, bool) {
+	if i >= l.Size() {
+		return nil, false
+	}
+
+	var el interface{}
+	s := Seq(l)
+	for j := uint64(0); ; j++ {
+		el, s, _ = s.FirstRest()
+		if j == i {
+			return el, true
+		}
+	}
+}

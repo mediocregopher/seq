@@ -163,3 +163,29 @@ func TestReverse(t *T) {
 	assertEmpty(l, t)
 	assertEmpty(nl, t)
 }
+
+// Test retrieving items from a List
+func TestNth(t *T) {
+	// Normal case, in bounds
+	intl := []interface{}{0, 2, 4, 6, 8}
+	l := NewList(intl...)
+	r, ok := l.Nth(3)
+	assertSaneList(l, t)
+	assertSeqContents(l, intl, t)
+	assertValue(r, 6, t)
+	assertValue(ok, true, t)
+
+	// Normal case, out of bounds
+	r, ok = l.Nth(8)
+	assertSaneList(l, t)
+	assertSeqContents(l, intl, t)
+	assertValue(r, nil, t)
+	assertValue(ok, false, t)
+
+	// Degenerate case
+	l = NewList()
+	r, ok = l.Nth(0)
+	assertEmpty(l, t)
+	assertValue(r, nil, t)
+	assertValue(ok, false, t)
+}
