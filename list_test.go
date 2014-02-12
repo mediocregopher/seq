@@ -146,24 +146,6 @@ func TestAppend(t *T) {
 	assertSeqContents(nl, []interface{}{0}, t)
 }
 
-// Test reversing a List
-func TestReverse(t *T) {
-	// Normal case
-	intl := []interface{}{3, 2, 1}
-	l := NewList(intl...)
-	nl := l.Reverse()
-	assertSaneList(l, t)
-	assertSaneList(nl, t)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{1, 2, 3}, t)
-
-	// Degenerate case
-	l = NewList()
-	nl = l.Reverse()
-	assertEmpty(l, t)
-	assertEmpty(nl, t)
-}
-
 // Test retrieving items from a List
 func TestNth(t *T) {
 	// Normal case, in bounds

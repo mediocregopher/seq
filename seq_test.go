@@ -4,6 +4,22 @@ import (
 	. "testing"
 )
 
+// Test reversing a Seq
+func TestReverse(t *T) {
+	// Normal case
+	intl := []interface{}{3, 2, 1}
+	l := NewList(intl...)
+	nl := Reverse(l)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{1, 2, 3}, t)
+
+	// Degenerate case
+	l = NewList()
+	nl = Reverse(l)
+	assertEmpty(l, t)
+	assertEmpty(nl, t)
+}
+
 // Test mapping over a Seq
 func TestMap(t *T) {
 	fn := func(n interface{}) interface{} {

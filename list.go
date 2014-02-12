@@ -150,21 +150,6 @@ func (l *List) Append(el interface{}) *List {
 	}
 }
 
-// Returns a reversed copy of the List. Completes in O(N) time.
-func (l *List) Reverse() *List {
-	nl := NewList()
-	s := Seq(l)
-	var el interface{}
-	var ok bool
-	for {
-		if el, s, ok = s.FirstRest(); ok {
-			nl = nl.Prepend(el)
-		} else {
-			return nl
-		}
-	}
-}
-
 // Returns the nth index element (starting at 0), with bool being false if i is
 // out of bounds. Completes in O(N) time.
 func (l *List) Nth(i uint64) (interface{}, bool) {

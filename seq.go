@@ -31,6 +31,20 @@ type Seq interface {
 	String() string
 }
 
+// Returns a reversed copy of the List. Completes in O(N) time.
+func Reverse(s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			l = l.Prepend(el)
+		} else {
+			return l
+		}
+	}
+}
+
 // Returns a Seq consisting of the result of applying fn to each element in the
 // given Seq. Completes in O(N) time.
 func Map(fn func(interface{}) interface{}, s Seq) Seq {
@@ -44,7 +58,7 @@ func Map(fn func(interface{}) interface{}, s Seq) Seq {
 			break
 		}
 	}
-	return l.Reverse()
+	return Reverse(l)
 }
 
 // A function used in a reduce. The first argument is the accumulator, the
@@ -104,7 +118,7 @@ func Filter(fn func(el interface{}) bool, s Seq) Seq {
 				l = l.Prepend(el)
 			}
 		} else {
-			return l.Reverse()
+			return Reverse(l)
 		}
 	}
 }
