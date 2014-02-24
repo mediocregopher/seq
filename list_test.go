@@ -9,8 +9,7 @@ import (
 func assertSaneList(l *List, t *T) {
 	if l.Size() == 0 {
 		var nilpointer *List
-		assertValue(l.next, nilpointer, t)
-		assertValue(l.el, nil, t)
+		assertValue(l, nilpointer, t)
 		return
 	}
 
@@ -47,14 +46,12 @@ func TestListSeq(t *T) {
 	l = sl.ToList()
 	var nilpointer *List
 	assertEmpty(l, t)
-	assertValue(l.el, nil, t)
-	assertValue(l.next, nilpointer, t)
+	assertValue(l, nilpointer, t)
 	assertValue(len(l.ToSlice()), 0, t)
 
-	// Testing creation of empty List. We dereference the pointers so that we're
-	// testing the actual values inside the List structs.
+	// Testing creation of empty List.
 	emptyl := NewList()
-	assertValue(*emptyl, *l, t)
+	assertValue(emptyl, nilpointer, t)
 }
 
 // Test the string representation of a List

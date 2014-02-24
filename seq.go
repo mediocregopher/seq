@@ -4,8 +4,7 @@ package seq
 // an interface onto any data structure
 type Seq interface {
 
-	// Returns the number of elements contained in the data structure. This call
-	// will always be O(1), no matter the data structure.
+	// Returns the number of elements contained in the data structure.
 	Size() uint64
 
 	// Returns the "first" element in the data structure as well as a Seq
