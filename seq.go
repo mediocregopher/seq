@@ -177,3 +177,34 @@ func TakeWhile(pred func(interface{}) bool, s Seq) Seq {
 	}
 	return Reverse(l)
 }
+
+// Returns a Seq the is the previous Seq without the first n elements. If n is
+// greater than the length of the Seq, returns an empty Seq. Completes in O(N)
+// time.
+func Drop(n uint64, s Seq) Seq {
+	var ok bool
+	for i := uint64(0); i < n; i++{
+		_, s, ok = s.FirstRest()
+		if !ok {
+			break
+		}
+	}
+	return s
+}
+
+// Drops elements from the given Seq until pred returns false for an element.
+// Returns a Seq of the remaining elements (including the one which returned
+// false). Completes in O(N) time.
+func DropWhile(pred func(interface{}) bool, s Seq) Seq {
+	var el interface{}
+	var curs Seq
+	var ok bool
+	for {
+		el, curs, ok = s.FirstRest()
+		if !ok || !pred(el) {
+			break
+		}
+		s = curs
+	}
+	return s
+}

@@ -201,5 +201,66 @@ func TestTakeWhile(t *T) {
 	nl = TakeWhile(pred, l)
 	assertEmpty(l, t)
 	assertEmpty(nl, t)
+}
 
+// Test dropping from a Seq
+func TestDrop(t *T) {
+	// Normal case
+	intl := []interface{}{0, 1, 2, 3, 4}
+	l := NewList(intl...)
+	nl := Drop(3, l)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{3, 4}, t)
+
+	// Edge cases
+	nl = Drop(5, l)
+	assertSeqContents(l, intl, t)
+	assertEmpty(nl, t)
+
+	nl = Drop(6, l)
+	assertSeqContents(l, intl, t)
+	assertEmpty(nl, t)
+
+	// Degenerate cases
+	empty := NewList()
+	nl = Drop(1, empty)
+	assertEmpty(empty, t)
+	assertEmpty(nl, t)
+
+	nl = Drop(0, l)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, intl, t)
+}
+
+// Test dropping from a Seq until a given condition
+func TestDropWhile(t *T) {
+	pred := func(el interface{}) bool {
+		return el.(int) < 3
+	}
+
+	// Normal case
+	intl := []interface{}{0, 1, 2, 3, 4, 5}
+	l := NewList(intl...)
+	nl := DropWhile(pred, l)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, []interface{}{3, 4, 5}, t)
+
+	// Edge cases
+	intl = []interface{}{5, 5, 5}
+	l = NewList(intl...)
+	nl = DropWhile(pred, l)
+	assertSeqContents(l, intl, t)
+	assertSeqContents(nl, intl, t)
+
+	intl = []interface{}{0, 1, 2}
+	l = NewList(intl...)
+	nl = DropWhile(pred, l)
+	assertSeqContents(l, intl, t)
+	assertEmpty(nl, t)
+
+	// Degenerate case
+	l = NewList()
+	nl = DropWhile(pred, l)
+	assertEmpty(l, t)
+	assertEmpty(nl, t)
 }
