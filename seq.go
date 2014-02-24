@@ -11,8 +11,8 @@ type Seq interface {
 	// containing a copy of the rest of the elements in the data structure. The
 	// "first" element can be random for structures which don't have a concept
 	// of order (like Set). Calling FirstRest on an empty Seq (Size() == 0) will
-	// return "first" as nil, the same empty Seq (TODO copy? I don't think it
-	// matters), and false. The third return value is true in all other cases.
+	// return "first" as nil, the same empty Seq , and false. The third return
+	// value is true in all other cases.
 	FirstRest() (interface{}, Seq, bool)
 
 	// Returns the elements in the Seq as a slice. If the underlying Seq has any
