@@ -143,3 +143,37 @@ func Flatten(s Seq) Seq {
 		}
 	}
 }
+
+// Returns a Seq containing the first n elements in the given Seq. If n is
+// greater than the length of the given Seq then the whole Seq is returned.
+// Completes in O(N) time.
+func Take(n uint64, s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for i := uint64(0); i < n; i++{
+		el, s, ok = s.FirstRest()
+		if !ok {
+			break
+		}
+		l = l.Prepend(el)
+	}
+	return Reverse(l)
+}
+
+// Goes through each item in the given Seq until an element returns false from
+// pred. Returns a new Seq containing these truthful elements. Completes in O(N)
+// time.
+func TakeWhile(pred func(interface{}) bool, s Seq) Seq {
+	l := NewList()
+	var el interface{}
+	var ok bool
+	for {
+		el, s, ok = s.FirstRest()
+		if !ok || !pred(el) {
+			break
+		}
+		l = l.Prepend(el)
+	}
+	return Reverse(l)
+}
