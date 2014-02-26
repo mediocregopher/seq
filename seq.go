@@ -105,6 +105,22 @@ func Any(fn func(el interface{}) bool, s Seq) (interface{}, bool) {
 	}
 }
 
+// Returns true if fn returns true for all elements in the Seq. Completes in
+// O(N) time.
+func All(fn func(interface{}) bool, s Seq) bool {
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); ok {
+			if !fn(el) {
+				return false
+			}
+		} else {
+			return true
+		}
+	}
+}
+
 // Returns a Seq containing all elements in the given Seq for which fn returned
 // true. Completes in O(N) time.
 func Filter(fn func(el interface{}) bool, s Seq) Seq {

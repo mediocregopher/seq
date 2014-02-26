@@ -98,6 +98,33 @@ func TestAny(t *T) {
 	assertValue(ok, false, t)
 }
 
+// Test the All function
+func TestAll(t *T) {
+	fn := func(el interface{}) bool {
+		return el.(int) > 3
+	}
+
+	// All match case
+	intl := []interface{}{4, 5, 6}
+	l := NewList(intl...)
+	ok := All(fn, l)
+	assertSeqContents(l, intl, t)
+	assertValue(ok, true, t)
+
+	// Not all match case
+	intl = []interface{}{3, 4, 2, 5}
+	l = NewList(intl...)
+	ok = All(fn, l)
+	assertSeqContents(l, intl, t)
+	assertValue(ok, false, t)
+
+	// Degenerate case
+	l = NewList()
+	ok = All(fn, l)
+	assertEmpty(l, t)
+	assertValue(ok, true, t)
+}
+
 // Test the Filter function
 func TestFilter(t *T) {
 	fn := func(el interface{}) bool {
