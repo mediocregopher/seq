@@ -125,8 +125,7 @@ func TestAll(t *T) {
 	assertValue(ok, true, t)
 }
 
-// Test the Filter function
-func TestFilter(t *T) {
+func testFilterGen(t *T, filterFn func(func(interface{}) bool, Seq) Seq) {
 	fn := func(el interface{}) bool {
 		return el.(int)%2 != 0
 	}
@@ -134,15 +133,25 @@ func TestFilter(t *T) {
 	// Normal case
 	intl := []interface{}{1, 2, 3, 4, 5}
 	l := NewList(intl...)
-	r := Filter(fn, l)
+	r := filterFn(fn, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(r, []interface{}{1, 3, 5}, t)
 
 	// Degenerate cases
 	l = NewList()
-	r = Filter(fn, l)
+	r = filterFn(fn, l)
 	assertEmpty(l, t)
 	assertEmpty(r, t)
+}
+
+// Test the Filter function
+func TestFilter(t *T) {
+	testFilterGen(t, Filter)
+}
+
+// Test the lazy Filter function
+func TestLFilter(t *T) {
+	testFilterGen(t, LFilter)
 }
 
 // Test Flatten-ing of a Seq
