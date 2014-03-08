@@ -1,11 +1,13 @@
 package seq
 
+import (
+	"bytes"
+	"fmt"
+)
+
 // The general interface which most operations will actually operate on. Acts as
 // an interface onto any data structure
 type Seq interface {
-
-	// Returns the number of elements contained in the data structure.
-	Size() uint64
 
 	// Returns the "first" element in the data structure as well as a Seq
 	// containing a copy of the rest of the elements in the data structure. The
@@ -14,20 +16,80 @@ type Seq interface {
 	// return "first" as nil, the same empty Seq , and false. The third return
 	// value is true in all other cases.
 	FirstRest() (interface{}, Seq, bool)
+}
 
-	// Returns the elements in the Seq as a slice. If the underlying Seq has any
-	// implicit order to it that order will be kept. An empty Seq will return an
-	// empty slice; nil is never returned. The slice's capacity will match
-	// whatever is returned by Size on the same Seq.
-	ToSlice() []interface{}
+// Returns the number of elements contained in the data structure. In general
+// this completes in O(N) time.
+func Size(s Seq) uint64 {
+	var ok bool
+	for i := uint64(0);; {
+		if _, s, ok = s.FirstRest(); ok {
+			i++
+		} else {
+			return i
+		}
+	}
+}
 
-	// Returns the elements in the Seq as a List. Has similar properties as
-	// ToSlice.
-	ToList() *List
+// Returns the elements in the Seq as a slice. If the underlying Seq has any
+// implicit order to it that order will be kept. An empty Seq will return an
+// empty slice; nil is never returned. In general this completes in O(N) time.
+func ToSlice(s Seq) []interface{} {
+	var el interface{}
+	var ok bool
+	for ret := make([]interface{}, 0, 8);; {
+		if el, s, ok = s.FirstRest(); ok {
+			ret = append(ret, el)
+		} else {
+			return ret
+		}
+	}
+}
 
-	// Returns a string representation of the element. This is useful for
-	// debugging, but not much else
-	String() string
+// Returns the elements in the Seq as a List. Has similar properties as
+// ToSlice. In general this completes in O(N) time. If the given Seq is already
+// a List it will complete in O(1) time.
+func ToList(s Seq) *List {
+	var ok bool
+	var l *List
+	if l, ok = s.(*List); ok {
+		return l
+	}
+
+	var el interface{}
+	for ret := NewList();; {
+		if el, s, ok = s.FirstRest(); ok {
+			ret = ret.Prepend(el)
+		} else {
+			return Reverse(ret).(*List)
+		}
+	}
+}
+
+// Turns a Seq into a string, with each element separated by a space and with a
+// dstart and dend wrapping the whole thing
+func ToString(s Seq, dstart, dend string) string {
+	buf := bytes.NewBufferString(dstart)
+	buf.WriteString(" ")
+	var el interface{}
+	var strel fmt.Stringer
+	var rest Seq
+	var ok bool
+	for {
+		if el, rest, ok = s.FirstRest(); ok {
+			if strel, ok = el.(fmt.Stringer); ok {
+				buf.WriteString(strel.String())
+			} else {
+				buf.WriteString(fmt.Sprintf("%v", el))
+			}
+			buf.WriteString(" ")
+			s = rest
+		} else {
+			break
+		}
+	}
+	buf.WriteString(dend)
+	return buf.String()
 }
 
 // Returns a reversed copy of the List. Completes in O(N) time.

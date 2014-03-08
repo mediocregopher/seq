@@ -7,14 +7,14 @@ import (
 // Asserts that the given list is properly formed and has all of its size fields
 // filled in correctly
 func assertSaneList(l *List, t *T) {
-	if l.Size() == 0 {
+	if Size(l) == 0 {
 		var nilpointer *List
 		assertValue(l, nilpointer, t)
 		return
 	}
 
-	size := l.Size()
-	assertValue(l.next.Size(), size - 1, t)
+	size := Size(l)
+	assertValue(Size(l.next), size - 1, t)
 	assertSaneList(l.next, t)
 }
 
@@ -29,8 +29,8 @@ func TestListSeq(t *T) {
 	// Testing FirstRest, Size, and ToSlice
 	sl := Seq(l)
 	for i := range ints {
-		assertSaneList(sl.ToList(), t)
-		assertValue(sl.Size(), intsl-uint64(i), t)
+		assertSaneList(ToList(sl), t)
+		assertValue(Size(sl), intsl-uint64(i), t)
 		assertSeqContents(sl, ints[i:], t)
 
 		first, rest, ok := sl.FirstRest()
@@ -43,11 +43,11 @@ func TestListSeq(t *T) {
 	// sl should be empty at this point. We use nilpointer because checking a
 	// nil pointer against nil after both have been wrapped in an interface{}
 	// (as happens when passed to assertValue) causes equality to not work.
-	l = sl.ToList()
+	l = ToList(sl)
 	var nilpointer *List
 	assertEmpty(l, t)
 	assertValue(l, nilpointer, t)
-	assertValue(len(l.ToSlice()), 0, t)
+	assertValue(len(ToSlice(l)), 0, t)
 
 	// Testing creation of empty List.
 	emptyl := NewList()

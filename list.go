@@ -26,17 +26,6 @@ func NewList(els ...interface{}) *List {
 	return cur
 }
 
-// Implementation of Size for Seq interface. Completes in O(N) time.
-func (l *List) Size() uint64 {
-	for i := uint64(0);; {
-		if l == nil {
-			return i
-		}
-		l = l.next
-		i++
-	}
-}
-
 // Implementation of FirstRest for Seq interface. Completes in O(1) time.
 func (l *List) FirstRest() (interface{}, Seq, bool) {
 	if l == nil {
@@ -46,24 +35,9 @@ func (l *List) FirstRest() (interface{}, Seq, bool) {
 	}
 }
 
-// Implementation of ToSlice for Seq interface. Completes in O(N) time.
-func (l *List) ToSlice() []interface{} {
-	ret := make([]interface{}, 0, 8)
-	for l != nil {
-		ret = append(ret, l.el)
-		l = l.next
-	}
-	return ret
-}
-
-// Implementation of ToList for Seq interface. Completes in O(1) time.
-func (l *List) ToList() *List {
-	return l
-}
-
-// Implementation of String for Seq interface.
+// Implementation of String for Stringer interface.
 func (l *List) String() string {
-	return toString(l, "(", ")")
+	return ToString(l, "(", ")")
 }
 
 // Prepends the given element to the front of the list, returning a copy of the

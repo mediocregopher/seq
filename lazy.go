@@ -25,19 +25,6 @@ func NewLazy(t Thunk) *Lazy {
 	return l
 }
 
-// Implementation of Size for Seq interface. Completes in O(N) time.
-func (l *Lazy) Size() uint64 {
-	var s Seq = l
-	var ok bool
-	for i := uint64(0);; {
-		if _, s, ok = s.FirstRest(); ok {
-			i++
-		} else {
-			return i
-		}
-	}
-}
-
 // Implementation of FirstRest for Seq interface. Completes in O(1) time.
 func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 	if l == nil {
@@ -55,42 +42,6 @@ func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 	} else {
 		return nil, nil, false
 	}
-}
-
-// Implementation of ToSlice for Seq interface. Completes in O(N) time.
-func (l *Lazy) ToSlice() []interface{} {
-	size := l.Size()
-	ret := make([]interface{}, 0,  size)
-	var el interface{}
-	var s Seq = l
-	var ok bool
-	for {
-		if el, s, ok = s.FirstRest(); ok {
-			ret = append(ret, el)
-		} else {
-			return ret
-		}
-	}
-}
-
-// Implementation of ToList for Seq interface. Completes in O(N) time.
-func (l *Lazy) ToList() *List {
-	ret := NewList()
-	var el interface{}
-	var s Seq = l
-	var ok bool
-	for {
-		if el, s, ok = s.FirstRest(); ok {
-			ret = ret.Prepend(el)
-		} else {
-			return Reverse(ret).(*List)
-		}
-	}
-}
-
-// Implementation of String for Seq interface.
-func (l *Lazy) String() string {
-	return toString(l, "<<", ">>")
 }
 
 // Thunks are the building blocks a Lazy. A Thunk returns an element, another
