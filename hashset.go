@@ -178,28 +178,28 @@ func (s *Set) SetVal(val interface{}) (*Set, bool) {
 	return root, found
 }
 
-func (s *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
+func (s *Set) internalDelVal(val interface{}, i uint32) (interface{}, *Set, bool) {
 	if s == nil {
-		return nil, false
+		return nil, nil, false
 	} else if s.full && equal(val, s.val) {
 		cs := s.clone()
 		cs.val = nil
 		cs.full = false
-		return cs, true
+		return s.val, cs, true
 	} else if s.kids == nil {
-		return s, false
+		return nil, s, false
 	}
 
 	h := hash(val, i)
-	if newkid, ok := s.kids[h].internalDelVal(val, i + 1); ok {
+	if oldval, newkid, ok := s.kids[h].internalDelVal(val, i + 1); ok {
 		cs := s.clone()
 		cs.kids[h] = newkid
-		return cs, true
+		return oldval, cs, true
 	}
-	return s, false
+	return nil, s, false
 }
 
-func (s *Set) DelVal(val interface{}) (*Set, bool) {
+func (s *Set) DelVal(val interface{}) (interface{}, *Set, bool) {
 	return s.internalDelVal(val, 0)
 }
 
