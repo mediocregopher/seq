@@ -37,3 +37,11 @@ func TestLazyBasic(t *T) {
 	}
 	close(ch)
 }
+
+// Test that arbitrary Seqs can turn into Lazy
+func TestToLazy(t *T) {
+	intl := []interface{}{0, 1, 2, 3, 4}
+	l := NewList(intl...)
+	ll := ToLazy(l)
+	assertSeqContents(ll, intl, t)
+}

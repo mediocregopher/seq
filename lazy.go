@@ -118,3 +118,20 @@ func takeWhileThunk(fn func(interface{}) bool, s Seq) Thunk {
 func LTakeWhile(fn func(interface{}) bool, s Seq) Seq {
 	return NewLazy(takeWhileThunk(fn, s))
 }
+
+func toLazyThunk(s Seq) Thunk {
+	return func() (interface{}, Thunk, bool) {
+		el, ns, ok := s.FirstRest()
+		if !ok {
+			return nil, nil, false
+		}
+		return el, toLazyThunk(ns), true
+	}
+}
+
+// Returns the Seq as a Lazy. Pointless for linked-lists, but possibly useful
+// for other implementations where FirstRest might be costly and the same Seq
+// needs to be iterated over many times.
+func ToLazy(s Seq) *Lazy {
+	return NewLazy(toLazyThunk(s))
+}
