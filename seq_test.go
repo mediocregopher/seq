@@ -20,8 +20,7 @@ func TestReverse(t *T) {
 	assertEmpty(nl, t)
 }
 
-// Test mapping over a Seq
-func TestMap(t *T) {
+func testMapGen(t *T, mapFn func(func(interface{}) interface{}, Seq) Seq) {
 	fn := func(n interface{}) interface{} {
 		return n.(int) + 1
 	}
@@ -29,15 +28,25 @@ func TestMap(t *T) {
 	// Normal case
 	intl := []interface{}{1, 2, 3}
 	l := NewList(intl...)
-	nl := Map(fn, l)
+	nl := mapFn(fn, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{2, 3, 4}, t)
 
 	// Degenerate case
 	l = NewList()
-	nl = Map(fn, l)
+	nl = mapFn(fn, l)
 	assertEmpty(l, t)
 	assertEmpty(nl, t)
+}
+
+// Test mapping over a Seq
+func TestMap(t *T) {
+	testMapGen(t, Map)
+}
+
+// Test lazily mapping over a Seq
+func TestLMap(t *T) {
+	testMapGen(t, LMap)
 }
 
 // Test reducing over a Seq

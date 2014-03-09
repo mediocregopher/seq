@@ -51,6 +51,22 @@ func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 // was actually empty (true indicates it yielded results).
 type Thunk func() (interface{}, Thunk, bool)
 
+func mapThunk(fn func(interface{}) interface{}, s Seq) Thunk {
+	return func() (interface{}, Thunk, bool) {
+		el, ns, ok := s.FirstRest()
+		if !ok {
+			return nil, nil, false
+		}
+
+		return fn(el), mapThunk(fn, ns), true
+	}
+}
+
+// Lazy implementation of Map
+func LMap(fn func(interface{}) interface{}, s Seq) Seq {
+	return NewLazy(mapThunk(fn, s))
+}
+
 func filterThunk(fn func(interface{}) bool, s Seq) Thunk {
 	return func() (interface{}, Thunk, bool) {
 		for {
