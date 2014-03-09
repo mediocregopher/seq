@@ -116,3 +116,24 @@ func (l *List) Nth(n uint64) (interface{}, bool) {
 		}
 	}
 }
+
+// Returns the elements in the Seq as a List. Has similar properties as
+// ToSlice. In general this completes in O(N) time. If the given Seq is already
+// a List it will complete in O(1) time.
+func ToList(s Seq) *List {
+	var ok bool
+	var l *List
+	if l, ok = s.(*List); ok {
+		return l
+	}
+
+	var el interface{}
+	for ret := NewList();; {
+		if el, s, ok = s.FirstRest(); ok {
+			ret = ret.Prepend(el)
+		} else {
+			return Reverse(ret).(*List)
+		}
+	}
+}
+
