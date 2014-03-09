@@ -21,28 +21,12 @@ func assertSaneList(l *List, t *T) {
 // Test creating a list and calling the Seq interface methods on it
 func TestListSeq(t *T) {
 	ints := []interface{}{1, "a", 5.0}
-	intsl := uint64(len(ints))
 
-	// Testing creation and Size
+	// Testing creation and Seq interface methods
 	l := NewList(ints...)
+	sl := testSeqGen(t, l, ints)
 
-	// Testing FirstRest, Size, and ToSlice
-	sl := Seq(l)
-	for i := range ints {
-		assertSaneList(ToList(sl), t)
-		assertValue(Size(sl), intsl-uint64(i), t)
-		assertSeqContents(sl, ints[i:], t)
-
-		first, rest, ok := sl.FirstRest()
-		assertValue(ok, true, t)
-		assertValue(first, ints[i], t)
-
-		sl = rest
-	}
-
-	// sl should be empty at this point. We use nilpointer because checking a
-	// nil pointer against nil after both have been wrapped in an interface{}
-	// (as happens when passed to assertValue) causes equality to not work.
+	// sl should be empty at this point
 	l = ToList(sl)
 	var nilpointer *List
 	assertEmpty(l, t)

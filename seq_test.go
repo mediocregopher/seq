@@ -4,6 +4,47 @@ import (
 	. "testing"
 )
 
+// Tests the FirstRest, Size, and ToSlice methods of a Seq
+func testSeqGen(t *T, s Seq, ints []interface{}) Seq {
+	intsl := uint64(len(ints))
+	for i := range ints {
+		assertSaneList(ToList(s), t)
+		assertValue(Size(s), intsl-uint64(i), t)
+		assertSeqContents(s, ints[i:], t)
+
+		first, rest, ok := s.FirstRest()
+		assertValue(ok, true, t)
+		assertValue(first, ints[i], t)
+
+		s = rest
+	}
+	return s
+}
+
+// Tests the FirstRest, Size, and ToSlice methods of an unordered Seq
+func testSeqNoOrderGen(t *T, s Seq, ints []interface{}) Seq {
+	intsl := uint64(len(ints))
+
+	m := map[interface{}]bool{}
+	for i := range ints {
+		m[ints[i]] = true
+	}
+
+	for i := range ints {
+		assertSaneList(ToList(s), t)
+		assertValue(Size(s), intsl-uint64(i), t)
+		assertSeqContentsNoOrder(s, m, t)
+
+		first, rest, ok := s.FirstRest()
+		assertValue(ok, true, t)
+		assertInMap(first, m, t)
+
+		delete(m, first)
+		s = rest
+	}
+	return s
+}
+
 // Test reversing a Seq
 func TestReverse(t *T) {
 	// Normal case

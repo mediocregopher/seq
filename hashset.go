@@ -9,6 +9,9 @@ import (
 // This is an implementation of a persistent tree, which will then be used as
 // the basis for vectors, hash maps, and hash sets.
 
+// TODO Make SetVal recursive like DelVal
+// TODO Make root nodes know their size
+
 type Setable interface {
 
 	// Returns an integer for the value. For two equivalent values (as defined
@@ -69,6 +72,19 @@ func equal(v1, v2 interface{}) bool {
 		return v1t.Equal(v2)
 	} else if v2t, ok := v2.(Setable); ok {
 		return v2t.Equal(v1)
+	} else if v1t, ok := v1.([]byte); ok {
+		if v2t, ok := v2.([]byte); ok {
+			if len(v1t) != len(v2t) {
+				return false
+			}
+			for i := range v1t {
+				if v1t[i] != v2t[i] {
+					return false
+				}
+			}
+			return true
+		}
+		return false
 	} else {
 		return v1 == v2
 	}
@@ -77,7 +93,18 @@ func equal(v1, v2 interface{}) bool {
 // The number of children each node in Set (implemented as a hash tree) can have
 const ARITY = 32;
 
+// A Set is an implementation of Seq in the form of a persistant hash-tree. All
+// public operations on it return a new, immutable form of the modified
+// variable, leaving the old one intact. Immutability is implemented through
+// node sharing, so operations aren't actually copying the entire hash-tree
+// everytime, only the nodes which change, making the implementation very
+// efficient compared to just copying.
+//
+// Items in sets need to be hashable and comparable. This means they either need
+// to be some real numeric type (int, float32, etc...), string, []byte, or
+// implement the Setable interface.
 type Set struct {
+
 	// The value being held
 	val  interface{}
 
@@ -89,6 +116,7 @@ type Set struct {
 	kids []*Set
 }
 
+// Returns a new Set of the given elements (or no elements, for an empty set)
 func NewSet(vals ...interface{}) *Set {
 	if len(vals) == 0 {
 		return nil
@@ -100,11 +128,12 @@ func NewSet(vals ...interface{}) *Set {
 	return s
 }
 
-// Tries to set the val on this Set node, or initialize the kids slice if it
-// can't. Returns whether or not the value was set and whether or not it was
+// Methods marked as "dirty" operate on the node in place, and potentially
+// change it or its children.
+
+// Dirty. Tries to set the val on this Set node, or initialize the kids slice if
+// it can't. Returns whether or not the value was set and whether or not it was
 // already set.
-//
-// dirty
 func (s *Set) shallowTrySetOrInit(val interface{}) (bool, bool) {
 	if !s.full {
 		s.val = val
@@ -120,7 +149,8 @@ func (s *Set) shallowTrySetOrInit(val interface{}) (bool, bool) {
 	return false, false
 }
 
-// dirty (obviously)
+// dirty (obviously). Sets a value on this node in place. Only used during
+// initialization.
 func (s *Set) setValDirty(val interface{}, i uint32) {
 	if ok, _ := s.shallowTrySetOrInit(val); ok {
 		return
@@ -134,6 +164,8 @@ func (s *Set) setValDirty(val interface{}, i uint32) {
 	}
 }
 
+// Returns a copy of this set node, including allocating and copying the kids
+// slice.
 func (s *Set) clone() *Set {
 	var newkids []*Set
 	if s.kids != nil {
@@ -148,6 +180,8 @@ func (s *Set) clone() *Set {
 	return cs
 }
 
+// Returns a new Set with the given value added to it. Also returns whether or
+// not the value existed previously. Completes in O(log(N)) time.
 func (s *Set) SetVal(val interface{}) (*Set, bool) {
 	if s == nil {
 		return NewSet(val), false
@@ -178,6 +212,7 @@ func (s *Set) SetVal(val interface{}) (*Set, bool) {
 	return root, found
 }
 
+// The actual implementation of DelVal, because we need to pass i down the stack
 func (s *Set) internalDelVal(val interface{}, i uint32) (interface{}, *Set, bool) {
 	if s == nil {
 		return nil, nil, false
@@ -199,10 +234,15 @@ func (s *Set) internalDelVal(val interface{}, i uint32) (interface{}, *Set, bool
 	return nil, s, false
 }
 
+// Returns a new Set with the given value removed from it. Returns the removed
+// value (if any), the new Set, and whether or not the value was actually
+// removed. Completes in O(log(N)) time.
 func (s *Set) DelVal(val interface{}) (interface{}, *Set, bool) {
 	return s.internalDelVal(val, 0)
 }
 
+// Actual implementation of FirstRest. Because we need it to return a *Set
+// instead of Seq for one case.
 func (s *Set) internalFirstRest() (interface{}, *Set, bool) {
 	if s == nil {
 		return nil, nil, false
@@ -230,11 +270,24 @@ func (s *Set) internalFirstRest() (interface{}, *Set, bool) {
 	return s.val, nil, true
 }
 
+// Implementation of FirstRest for Seq interface. Completes in O(log(N)) time.
 func (s *Set) FirstRest() (interface{}, Seq, bool) {
 	el, restSet, ok := s.internalFirstRest()
 	return el, Seq(restSet), ok
 }
 
+// Implementation of String for Stringer interface
 func (s *Set) String() string {
 	return ToString(s, "#{", "}#")
+}
+
+// Returns the elements in the Seq as a set. In general this completes in
+// O(N*log(N)) time (I think...). If the given Seq is already a Set it will
+// complete in O(1) time.
+func ToSet(s Seq) *Set {
+	if set, ok := s.(*Set); ok {
+		return set
+	}
+	vals := ToSlice(s)
+	return NewSet(vals...)
 }
