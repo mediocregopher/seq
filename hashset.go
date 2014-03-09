@@ -242,6 +242,26 @@ func (s *Set) DelVal(val interface{}) (*Set, bool) {
 	return ns, ok
 }
 
+// The actual implementation of GetVal, because we need to pass i down the stack
+func (s *Set) internalGetVal(val interface{}, i uint32) (interface{}, bool) {
+	if s == nil {
+		return nil, false
+	} else if s.full && equal(val, s.val) {
+		return s.val, true
+	} else if s.kids == nil {
+		return nil, false
+	}
+
+	h := hash(val, i)
+	return s.kids[h].internalGetVal(val, i + 1)
+}
+
+// Returns a value from the Set, along with  a boolean indiciating whether or
+// not the value was found. Completes in O(log(N)) time.
+func (s *Set) GetVal(val interface{}) (interface{}, bool) {
+	return s.internalGetVal(val, 0)
+}
+
 // Actual implementation of FirstRest. Because we need it to return a *Set
 // instead of Seq for one case.
 func (s *Set) internalFirstRest() (interface{}, *Set, bool) {

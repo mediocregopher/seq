@@ -86,6 +86,44 @@ func TestDelVal(t *T) {
 	assertValue(ok, true, t)
 }
 
+// Test getting values from a Set
+func GetVal(t *T) {
+	//Degenerate case
+	s := NewSet()
+	v, ok := s.GetVal(1)
+	assertValue(v, nil, t)
+	assertValue(ok, false, t)
+
+	s = NewSet(0, 1, 2, 3, 4)
+	v, ok = s.GetVal(1)
+	assertValue(v, 1, t)
+	assertValue(ok, true, t)
+
+	// After delete
+	s, _ = s.DelVal(1)
+	v, ok = s.GetVal(1)
+	assertValue(v, nil, t)
+	assertValue(ok, false, t)
+
+	// After set
+	s, _ = s.SetVal(1)
+	v, ok = s.GetVal(1)
+	assertValue(v, 1, t)
+	assertValue(ok, true, t)
+
+	// After delete root node
+	s, _ = s.DelVal(0)
+	v, ok = s.GetVal(0)
+	assertValue(v, nil, t)
+	assertValue(ok, false, t)
+
+	// After set root node
+	s, _ = s.SetVal(5)
+	v, ok = s.GetVal(5)
+	assertValue(v, 5, t)
+	assertValue(ok, true, t)
+}
+
 // Test that Size functions properly for all cases
 func TestSetSize(t *T) {
 	// Degenerate case
