@@ -186,33 +186,42 @@ func TestFlatten(t *T) {
 	assertEmpty(nl, t)
 }
 
-// Test taking from a Seq
-func TestTake(t *T) {
+func testTakeGen(t *T, takeFn func(uint64, Seq) Seq) {
 	// Normal case
 	intl := []interface{}{0, 1, 2, 3, 4}
 	l := NewList(intl...)
-	nl := Take(3, l)
+	nl := takeFn(3, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
 
 	// Edge cases
-	nl = Take(5, l)
+	nl = takeFn(5, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, intl, t)
 
-	nl = Take(6, l)
+	nl = takeFn(6, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, intl, t)
 
 	// Degenerate cases
 	empty := NewList()
-	nl = Take(1, empty)
+	nl = takeFn(1, empty)
 	assertEmpty(empty, t)
 	assertEmpty(nl, t)
 
-	nl = Take(0, l)
+	nl = takeFn(0, l)
 	assertSeqContents(l, intl, t)
 	assertEmpty(nl, t)
+}
+
+// Test taking from a Seq
+func TestTake(t *T) {
+	testTakeGen(t, Take)
+}
+
+// Test lazily taking from a Seq
+func TestLTake(t *T) {
+	testTakeGen(t, LTake)
 }
 
 // Test taking from a Seq until a given condition

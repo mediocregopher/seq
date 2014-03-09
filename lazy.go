@@ -88,3 +88,18 @@ func filterThunk(fn func(interface{}) bool, s Seq) Thunk {
 func LFilter(fn func(interface{}) bool, s Seq) Seq {
 	return NewLazy(filterThunk(fn, s))
 }
+
+func takeThunk(n uint64, s Seq) Thunk {
+	return func() (interface{}, Thunk, bool) {
+		el, ns, ok := s.FirstRest()
+		if !ok || n == 0 {
+			return nil, nil, false
+		}
+		return el, takeThunk(n - 1, ns), true
+	}
+}
+
+// Lazy implementation of Take
+func LTake(n uint64, s Seq) Seq {
+	return NewLazy(takeThunk(n, s))
+}
