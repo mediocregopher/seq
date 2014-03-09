@@ -33,7 +33,7 @@ func testSeqNoOrderGen(t *T, s Seq, ints []interface{}) Seq {
 	for i := range ints {
 		assertSaneList(ToList(s), t)
 		assertValue(Size(s), intsl-uint64(i), t)
-		assertSeqContentsNoOrder(s, m, t)
+		assertSeqContentsNoOrderMap(s, m, t)
 
 		first, rest, ok := s.FirstRest()
 		assertValue(ok, true, t)

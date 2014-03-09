@@ -181,20 +181,21 @@ func (s *Set) clone() *Set {
 }
 
 // Returns a new Set with the given value added to it. Also returns whether or
-// not the value existed previously. Completes in O(log(N)) time.
+// not this is the first time setting this value (false if it was already there
+// and was overwritten). Completes in O(log(N)) time.
 func (s *Set) SetVal(val interface{}) (*Set, bool) {
 	if s == nil {
-		return NewSet(val), false
+		return NewSet(val), true
 	}
 
 	cs := s.clone()
 	root := cs
 	i := uint32(0)
-	var found bool
+	var firstTime bool
 	var newcs, kid *Set
 	for {
 		if ok, prev := cs.shallowTrySetOrInit(val); ok {
-			found = prev
+			firstTime = !prev
 			break
 		}
 
@@ -206,10 +207,11 @@ func (s *Set) SetVal(val interface{}) (*Set, bool) {
 			i++
 		} else {
 			cs.kids[h] = NewSet(val)
+			firstTime = true
 			break
 		}
 	}
-	return root, found
+	return root, firstTime
 }
 
 // The actual implementation of DelVal, because we need to pass i down the stack
