@@ -224,8 +224,7 @@ func TestLTake(t *T) {
 	testTakeGen(t, LTake)
 }
 
-// Test taking from a Seq until a given condition
-func TestTakeWhile(t *T) {
+func testTakeWhileGen(t *T, takeWhileFn func(func(interface{}) bool, Seq) Seq) {
 	pred := func(el interface{}) bool {
 		return el.(int) < 3
 	}
@@ -233,28 +232,38 @@ func TestTakeWhile(t *T) {
 	// Normal case
 	intl := []interface{}{0, 1, 2, 3, 4, 5}
 	l := NewList(intl...)
-	nl := TakeWhile(pred, l)
+	nl := takeWhileFn(pred, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
 
 	// Edge cases
 	intl = []interface{}{5, 5, 5}
 	l = NewList(intl...)
-	nl = TakeWhile(pred, l)
+	nl = takeWhileFn(pred, l)
 	assertSeqContents(l, intl, t)
 	assertEmpty(nl, t)
 
 	intl = []interface{}{0, 1, 2}
 	l = NewList(intl...)
-	nl = TakeWhile(pred, l)
+	nl = takeWhileFn(pred, l)
 	assertSeqContents(l, intl, t)
 	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
 
 	// Degenerate case
 	l = NewList()
-	nl = TakeWhile(pred, l)
+	nl = takeWhileFn(pred, l)
 	assertEmpty(l, t)
 	assertEmpty(nl, t)
+}
+
+// Test taking from a Seq until a given condition
+func TestTakeWhile(t *T) {
+	testTakeWhileGen(t, TakeWhile)
+}
+
+// Test lazily taking from a Seq until a given condition
+func TestLTakeWhile(t *T) {
+	testTakeWhileGen(t, LTakeWhile)
 }
 
 // Test dropping from a Seq

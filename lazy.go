@@ -103,3 +103,18 @@ func takeThunk(n uint64, s Seq) Thunk {
 func LTake(n uint64, s Seq) Seq {
 	return NewLazy(takeThunk(n, s))
 }
+
+func takeWhileThunk(fn func(interface{}) bool, s Seq) Thunk {
+	return func() (interface{}, Thunk, bool) {
+		el, ns, ok := s.FirstRest()
+		if !ok || !fn(el) {
+			return nil, nil, false
+		}
+		return el, takeWhileThunk(fn, ns), true
+	}
+}
+
+// Lazy implementation of TakeWhile
+func LTakeWhile(fn func(interface{}) bool, s Seq) Seq {
+	return NewLazy(takeWhileThunk(fn, s))
+}
