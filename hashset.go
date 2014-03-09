@@ -210,36 +210,36 @@ func (s *Set) SetVal(val interface{}) (*Set, bool) {
 }
 
 // The actual implementation of DelVal, because we need to pass i down the stack
-func (s *Set) internalDelVal(val interface{}, i uint32) (interface{}, *Set, bool) {
+func (s *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
 	if s == nil {
-		return nil, nil, false
+		return nil, false
 	} else if s.full && equal(val, s.val) {
 		cs := s.clone()
 		cs.val = nil
 		cs.full = false
-		return s.val, cs, true
+		return cs, true
 	} else if s.kids == nil {
-		return nil, s, false
+		return s, false
 	}
 
 	h := hash(val, i)
-	if oldval, newkid, ok := s.kids[h].internalDelVal(val, i + 1); ok {
+	if newkid, ok := s.kids[h].internalDelVal(val, i + 1); ok {
 		cs := s.clone()
 		cs.kids[h] = newkid
-		return oldval, cs, true
+		return cs, true
 	}
-	return nil, s, false
+	return s, false
 }
 
 // Returns a new Set with the given value removed from it. Returns the removed
 // value (if any), the new Set, and whether or not the value was actually
 // removed. Completes in O(log(N)) time.
-func (s *Set) DelVal(val interface{}) (interface{}, *Set, bool) {
-	v, ns, ok := s.internalDelVal(val, 0)
+func (s *Set) DelVal(val interface{}) (*Set, bool) {
+	ns, ok := s.internalDelVal(val, 0)
 	if ok && ns != nil {
 		ns.size--
 	}
-	return v, ns, ok
+	return ns, ok
 }
 
 // Actual implementation of FirstRest. Because we need it to return a *Set

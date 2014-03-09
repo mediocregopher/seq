@@ -54,31 +54,29 @@ func TestDelVal(t *T) {
 	// Degenerate case
 	s := NewSet()
 	assertEmpty(s, t)
-	v, s, ok := s.DelVal(0)
+	s, ok := s.DelVal(0)
 	assertEmpty(s, t)
 	assertValue(ok, false, t)
 
 	s = NewSet(ints...)
-	v, s1, ok := s.DelVal(4)
-	assertValue(v, 4, t)
+	s1, ok := s.DelVal(4)
 	assertSeqContentsNoOrder(s, ints, t)
 	assertSeqContentsNoOrder(s1, ints1, t)
 	assertValue(ok, true, t)
 
-	v, s1, ok = s1.DelVal(4)
+	s1, ok = s1.DelVal(4)
 	assertSeqContentsNoOrder(s1, ints1, t)
 	assertValue(ok, false, t)
 
 	// 0 is the value on the root node of s, which is kind of a special case. We
 	// want to test deleting it and setting a new value (which should get put on
 	// the root node).
-	v, s2, ok := s.DelVal(0)
-	assertValue(v, 0, t)
+	s2, ok := s.DelVal(0)
 	assertSeqContentsNoOrder(s, ints, t)
 	assertSeqContentsNoOrder(s2, ints2, t)
 	assertValue(ok, true, t)
 
-	v, s2, ok = s2.DelVal(0)
+	s2, ok = s2.DelVal(0)
 	assertSeqContentsNoOrder(s2, ints2, t)
 	assertValue(ok, false, t)
 
@@ -105,13 +103,13 @@ func TestSetSize(t *T) {
 	assertValue(s.Size(), uint64(4), t)
 
 	// Deleting (both value already in and a value not in)
-	_, s, _ = s.DelVal(3)
+	s, _ = s.DelVal(3)
 	assertValue(s.Size(), uint64(3), t)
-	_, s, _ = s.DelVal(3)
+	s, _ = s.DelVal(3)
 	assertValue(s.Size(), uint64(3), t)
 
 	// Deleting and setting the root node
-	_, s, _ = s.DelVal(0)
+	s, _ = s.DelVal(0)
 	assertValue(s.Size(), uint64(2), t)
 	s, _ = s.SetVal(5)
 	assertValue(s.Size(), uint64(3), t)
