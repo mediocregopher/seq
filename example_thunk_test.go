@@ -1,4 +1,4 @@
-package seq_test
+package seq
 
 import (
 	"github.com/mediocregopher/seq"
