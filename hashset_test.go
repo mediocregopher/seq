@@ -87,3 +87,33 @@ func TestDelVal(t *T) {
 	assertSeqContentsNoOrder(s3, ints3, t)
 	assertValue(ok, true, t)
 }
+
+// Test that Size functions properly for all cases
+func TestSetSize(t *T) {
+	// Degenerate case
+	s := NewSet()
+	assertValue(s.Size(), uint64(0), t)
+
+	// Initialization case
+	s = NewSet(0, 1, 2)
+	assertValue(s.Size(), uint64(3), t)
+
+	// Setting (both value not in and a value already in)
+	s, _ = s.SetVal(3)
+	assertValue(s.Size(), uint64(4), t)
+	s, _ = s.SetVal(3)
+	assertValue(s.Size(), uint64(4), t)
+
+	// Deleting (both value already in and a value not in)
+	_, s, _ = s.DelVal(3)
+	assertValue(s.Size(), uint64(3), t)
+	_, s, _ = s.DelVal(3)
+	assertValue(s.Size(), uint64(3), t)
+
+	// Deleting and setting the root node
+	_, s, _ = s.DelVal(0)
+	assertValue(s.Size(), uint64(2), t)
+	s, _ = s.SetVal(5)
+	assertValue(s.Size(), uint64(3), t)
+
+}

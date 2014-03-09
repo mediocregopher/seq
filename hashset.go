@@ -9,8 +9,6 @@ import (
 // This is an implementation of a persistent tree, which will then be used as
 // the basis for vectors, hash maps, and hash sets.
 
-// TODO Make root nodes know their size
-
 type Setable interface {
 
 	// Returns an integer for the value. For two equivalent values (as defined
@@ -113,6 +111,9 @@ type Set struct {
 
 	// Slice of kids of this node. Could be an empty slice
 	kids []*Set
+
+	// Number of values in this Set.
+	size uint64
 }
 
 // Returns a new Set of the given elements (or no elements, for an empty set)
@@ -124,6 +125,7 @@ func NewSet(vals ...interface{}) *Set {
 	for i := range vals {
 		s.setValDirty(vals[i], 0)
 	}
+	s.size = uint64(len(vals))
 	return s
 }
 
@@ -175,6 +177,7 @@ func (s *Set) clone() *Set {
 		val:  s.val,
 		full: s.full,
 		kids: newkids,
+		size: s.size,
 	}
 	return cs
 }
@@ -199,7 +202,11 @@ func (s *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
 // not this is the first time setting this value (false if it was already there
 // and was overwritten). Completes in O(log(N)) time.
 func (s *Set) SetVal(val interface{}) (*Set, bool) {
-	return s.internalSetVal(val, 0)
+	ns, ok := s.internalSetVal(val, 0)
+	if ok {
+		ns.size++
+	}
+	return ns, ok
 }
 
 // The actual implementation of DelVal, because we need to pass i down the stack
@@ -228,7 +235,11 @@ func (s *Set) internalDelVal(val interface{}, i uint32) (interface{}, *Set, bool
 // value (if any), the new Set, and whether or not the value was actually
 // removed. Completes in O(log(N)) time.
 func (s *Set) DelVal(val interface{}) (interface{}, *Set, bool) {
-	return s.internalDelVal(val, 0)
+	v, ns, ok := s.internalDelVal(val, 0)
+	if ok && ns != nil {
+		ns.size--
+	}
+	return v, ns, ok
 }
 
 // Actual implementation of FirstRest. Because we need it to return a *Set
@@ -263,12 +274,23 @@ func (s *Set) internalFirstRest() (interface{}, *Set, bool) {
 // Implementation of FirstRest for Seq interface. Completes in O(log(N)) time.
 func (s *Set) FirstRest() (interface{}, Seq, bool) {
 	el, restSet, ok := s.internalFirstRest()
+	if ok && restSet != nil {
+		restSet.size--
+	}
 	return el, Seq(restSet), ok
 }
 
 // Implementation of String for Stringer interface
 func (s *Set) String() string {
 	return ToString(s, "#{", "}#")
+}
+
+// Returns the number of elements in the Set. Completes in O(1) time.
+func (s *Set) Size() uint64 {
+	if s == nil {
+		return 0
+	}
+	return s.size
 }
 
 // Returns the elements in the Seq as a set. In general this completes in
