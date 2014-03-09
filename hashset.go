@@ -9,7 +9,6 @@ import (
 // This is an implementation of a persistent tree, which will then be used as
 // the basis for vectors, hash maps, and hash sets.
 
-// TODO Make SetVal recursive like DelVal
 // TODO Make root nodes know their size
 
 type Setable interface {
@@ -180,38 +179,27 @@ func (s *Set) clone() *Set {
 	return cs
 }
 
+// The actual implementation of SetVal, because we need to pass i down the stack
+func (s *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
+	if s == nil {
+		return NewSet(val), true
+	}
+	cs := s.clone()
+	if ok, prev := cs.shallowTrySetOrInit(val); ok {
+		return cs, !prev
+	}
+
+	h := hash(val, i)
+	newkid, ok := s.kids[h].internalSetVal(val, i + 1)
+	cs.kids[h] = newkid
+	return cs, ok
+}
+
 // Returns a new Set with the given value added to it. Also returns whether or
 // not this is the first time setting this value (false if it was already there
 // and was overwritten). Completes in O(log(N)) time.
 func (s *Set) SetVal(val interface{}) (*Set, bool) {
-	if s == nil {
-		return NewSet(val), true
-	}
-
-	cs := s.clone()
-	root := cs
-	i := uint32(0)
-	var firstTime bool
-	var newcs, kid *Set
-	for {
-		if ok, prev := cs.shallowTrySetOrInit(val); ok {
-			firstTime = !prev
-			break
-		}
-
-		h := hash(val, i)
-		if kid = cs.kids[h]; kid != nil {
-			newcs = kid.clone()
-			cs.kids[h] = newcs
-			cs = newcs
-			i++
-		} else {
-			cs.kids[h] = NewSet(val)
-			firstTime = true
-			break
-		}
-	}
-	return root, firstTime
+	return s.internalSetVal(val, 0)
 }
 
 // The actual implementation of DelVal, because we need to pass i down the stack
