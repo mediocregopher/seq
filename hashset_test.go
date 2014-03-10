@@ -220,3 +220,24 @@ func TestDifference(t *T) {
 	assertSeqContentsNoOrder(s2, ints2, t)
 	assertSeqContentsNoOrder(sd, intsd, t)
 }
+
+// Test that SymDifference functions properly
+func TestSymDifference(t *T) {
+	// Degenerate case
+	empty := NewSet()
+	assertEmpty(empty.SymDifference(empty), t)
+
+	ints1 := []interface{}{0, 1, 2, 3}
+	ints2 := []interface{}{2, 3, 4}
+	intsd := []interface{}{0, 1, 4}
+	s1 := NewSet(ints1...)
+	s2 := NewSet(ints2...)
+
+	assertSeqContentsNoOrder(s1.SymDifference(empty), ints1, t)
+	assertSeqContentsNoOrder(empty.SymDifference(s1), ints1, t)
+
+	sd := s1.SymDifference(s2)
+	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsNoOrder(sd, intsd, t)
+}

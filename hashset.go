@@ -375,6 +375,29 @@ func (set *Set) Difference(s Seq) *Set {
 	}
 }
 
+// Returns a Set of all elements that are either in the original Set or the
+// given Seq, but not in both. Completes in O(M*log(N)), with M being the number
+// of elements in the Seq and N the number of elements in the Set.
+func (set *Set) SymDifference(s Seq) *Set {
+	if set == nil {
+		return ToSet(s)
+	}
+
+	cset := set.clone()
+	var cset2 *Set
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); !ok {
+			return cset
+		} else if cset2, ok = cset.DelVal(el); ok {
+			cset = cset2
+		} else {
+			cset, _ = cset.SetVal(el)
+		}
+	}
+}
+
 // Returns the elements in the Seq as a set. In general this completes in
 // O(N*log(N)) time (I think...). If the given Seq is already a Set it will
 // complete in O(1) time.
