@@ -355,6 +355,26 @@ func (set *Set) Intersection(s Seq) *Set {
 	}
 }
 
+// Returns a Set of all elements in the original Set that aren't in the Seq.
+// Completes in O(M*log(N)), with M being the number of elements in the Seq and
+// N the number of elements in the Set
+func (set *Set) Difference(s Seq) *Set {
+	if set == nil {
+		return nil
+	}
+
+	cset := set.clone()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); !ok {
+			return cset
+		} else {
+			cset, _ = cset.DelVal(el)
+		}
+	}
+}
+
 // Returns the elements in the Seq as a set. In general this completes in
 // O(N*log(N)) time (I think...). If the given Seq is already a Set it will
 // complete in O(1) time.

@@ -179,7 +179,6 @@ func TestUnion(t *T) {
 func TestIntersection(t *T) {
 	// Degenerate case
 	empty := NewSet()
-	t.Log("Degenerate case")
 	assertEmpty(empty.Intersection(empty), t)
 
 	ints1 := []interface{}{0, 1, 2}
@@ -199,4 +198,25 @@ func TestIntersection(t *T) {
 	assertSeqContentsNoOrder(s2, ints2, t)
 	assertSeqContentsNoOrder(s3, ints3, t)
 	assertSeqContentsNoOrder(si, intsi, t)
+}
+
+// Test that Difference functions properly
+func TestDifference(t *T) {
+	// Degenerate case
+	empty := NewSet()
+	assertEmpty(empty.Difference(empty), t)
+
+	ints1 := []interface{}{0, 1, 2, 3}
+	ints2 := []interface{}{2, 3, 4}
+	intsd := []interface{}{0, 1}
+	s1 := NewSet(ints1...)
+	s2 := NewSet(ints2...)
+
+	assertSeqContentsNoOrder(s1.Difference(empty), ints1, t)
+	assertEmpty(empty.Difference(s1), t)
+
+	sd := s1.Difference(s2)
+	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsNoOrder(sd, intsd, t)
 }
