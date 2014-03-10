@@ -121,12 +121,12 @@ func NewSet(vals ...interface{}) *Set {
 	if len(vals) == 0 {
 		return nil
 	}
-	s := new(Set)
+	set := new(Set)
 	for i := range vals {
-		s.setValDirty(vals[i], 0)
+		set.setValDirty(vals[i], 0)
 	}
-	s.size = uint64(len(vals))
-	return s
+	set.size = uint64(len(vals))
+	return set
 }
 
 // Methods marked as "dirty" operate on the node in place, and potentially
@@ -135,165 +135,165 @@ func NewSet(vals ...interface{}) *Set {
 // Dirty. Tries to set the val on this Set node, or initialize the kids slice if
 // it can't. Returns whether or not the value was set and whether or not it was
 // already set.
-func (s *Set) shallowTrySetOrInit(val interface{}) (bool, bool) {
-	if !s.full {
-		s.val = val
-		s.full = true
+func (set *Set) shallowTrySetOrInit(val interface{}) (bool, bool) {
+	if !set.full {
+		set.val = val
+		set.full = true
 		return true, false
-	} else if equal(s.val, val) {
-		s.val = val
-		s.full = true
+	} else if equal(set.val, val) {
+		set.val = val
+		set.full = true
 		return true, true
-	} else if s.kids == nil {
-		s.kids = make([]*Set, ARITY)
+	} else if set.kids == nil {
+		set.kids = make([]*Set, ARITY)
 	}
 	return false, false
 }
 
 // dirty (obviously). Sets a value on this node in place. Only used during
 // initialization.
-func (s *Set) setValDirty(val interface{}, i uint32) {
-	if ok, _ := s.shallowTrySetOrInit(val); ok {
+func (set *Set) setValDirty(val interface{}, i uint32) {
+	if ok, _ := set.shallowTrySetOrInit(val); ok {
 		return
 	}
 	
 	h := hash(val, i)
-	if kid := s.kids[h]; kid != nil {
+	if kid := set.kids[h]; kid != nil {
 		kid.setValDirty(val, i + 1)
 	} else {
-		s.kids[h] = NewSet(val)
+		set.kids[h] = NewSet(val)
 	}
 }
 
 // Returns a copy of this set node, including allocating and copying the kids
 // slice.
-func (s *Set) clone() *Set {
+func (set *Set) clone() *Set {
 	var newkids []*Set
-	if s.kids != nil {
+	if set.kids != nil {
 		newkids = make([]*Set, ARITY)
-		copy(newkids, s.kids)
+		copy(newkids, set.kids)
 	}
 	cs := &Set{
-		val:  s.val,
-		full: s.full,
+		val:  set.val,
+		full: set.full,
 		kids: newkids,
-		size: s.size,
+		size: set.size,
 	}
 	return cs
 }
 
 // The actual implementation of SetVal, because we need to pass i down the stack
-func (s *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
-	if s == nil {
+func (set *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
+	if set == nil {
 		return NewSet(val), true
 	}
-	cs := s.clone()
-	if ok, prev := cs.shallowTrySetOrInit(val); ok {
-		return cs, !prev
+	cset := set.clone()
+	if ok, prev := cset.shallowTrySetOrInit(val); ok {
+		return cset, !prev
 	}
 
 	h := hash(val, i)
-	newkid, ok := cs.kids[h].internalSetVal(val, i + 1)
-	cs.kids[h] = newkid
-	return cs, ok
+	newkid, ok := cset.kids[h].internalSetVal(val, i + 1)
+	cset.kids[h] = newkid
+	return cset, ok
 }
 
 // Returns a new Set with the given value added to it. Also returns whether or
 // not this is the first time setting this value (false if it was already there
 // and was overwritten). Completes in O(log(N)) time.
-func (s *Set) SetVal(val interface{}) (*Set, bool) {
-	ns, ok := s.internalSetVal(val, 0)
+func (set *Set) SetVal(val interface{}) (*Set, bool) {
+	nset, ok := set.internalSetVal(val, 0)
 	if ok {
-		ns.size++
+		nset.size++
 	}
-	return ns, ok
+	return nset, ok
 }
 
 // The actual implementation of DelVal, because we need to pass i down the stack
-func (s *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
-	if s == nil {
+func (set *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
+	if set == nil {
 		return nil, false
-	} else if s.full && equal(val, s.val) {
-		cs := s.clone()
-		cs.val = nil
-		cs.full = false
-		return cs, true
-	} else if s.kids == nil {
-		return s, false
+	} else if set.full && equal(val, set.val) {
+		cset := set.clone()
+		cset.val = nil
+		cset.full = false
+		return cset, true
+	} else if set.kids == nil {
+		return set, false
 	}
 
 	h := hash(val, i)
-	if newkid, ok := s.kids[h].internalDelVal(val, i + 1); ok {
-		cs := s.clone()
-		cs.kids[h] = newkid
-		return cs, true
+	if newkid, ok := set.kids[h].internalDelVal(val, i + 1); ok {
+		cset := set.clone()
+		cset.kids[h] = newkid
+		return cset, true
 	}
-	return s, false
+	return set, false
 }
 
 // Returns a new Set with the given value removed from it. Returns the removed
 // value (if any), the new Set, and whether or not the value was actually
 // removed. Completes in O(log(N)) time.
-func (s *Set) DelVal(val interface{}) (*Set, bool) {
-	ns, ok := s.internalDelVal(val, 0)
-	if ok && ns != nil {
-		ns.size--
+func (set *Set) DelVal(val interface{}) (*Set, bool) {
+	nset, ok := set.internalDelVal(val, 0)
+	if ok && nset != nil {
+		nset.size--
 	}
-	return ns, ok
+	return nset, ok
 }
 
 // The actual implementation of GetVal, because we need to pass i down the stack
-func (s *Set) internalGetVal(val interface{}, i uint32) (interface{}, bool) {
-	if s == nil {
+func (set *Set) internalGetVal(val interface{}, i uint32) (interface{}, bool) {
+	if set == nil {
 		return nil, false
-	} else if s.full && equal(val, s.val) {
-		return s.val, true
-	} else if s.kids == nil {
+	} else if set.full && equal(val, set.val) {
+		return set.val, true
+	} else if set.kids == nil {
 		return nil, false
 	}
 
 	h := hash(val, i)
-	return s.kids[h].internalGetVal(val, i + 1)
+	return set.kids[h].internalGetVal(val, i + 1)
 }
 
 // Returns a value from the Set, along with  a boolean indiciating whether or
 // not the value was found. Completes in O(log(N)) time.
-func (s *Set) GetVal(val interface{}) (interface{}, bool) {
-	return s.internalGetVal(val, 0)
+func (set *Set) GetVal(val interface{}) (interface{}, bool) {
+	return set.internalGetVal(val, 0)
 }
 
 // Actual implementation of FirstRest. Because we need it to return a *Set
 // instead of Seq for one case.
-func (s *Set) internalFirstRest() (interface{}, *Set, bool) {
-	if s == nil {
+func (set *Set) internalFirstRest() (interface{}, *Set, bool) {
+	if set == nil {
 		return nil, nil, false
 	}
 
-	if s.kids != nil {
+	if set.kids != nil {
 		var el interface{}
 		var rest *Set
 		var ok bool
-		for i := range s.kids {
-			if el, rest, ok = s.kids[i].internalFirstRest(); ok {
-				cs := s.clone()
-				cs.kids[i] = rest
-				return el, cs, true
+		for i := range set.kids {
+			if el, rest, ok = set.kids[i].internalFirstRest(); ok {
+				cset := set.clone()
+				cset.kids[i] = rest
+				return el, cset, true
 			}
 		}
 	}
 
 	// We're not nil, but we don't have a value and no kids had values. We might
 	// as well be nil.
-	if !s.full {
+	if !set.full {
 		return nil, nil, false
 	}
 
-	return s.val, nil, true
+	return set.val, nil, true
 }
 
 // Implementation of FirstRest for Seq interface. Completes in O(log(N)) time.
-func (s *Set) FirstRest() (interface{}, Seq, bool) {
-	el, restSet, ok := s.internalFirstRest()
+func (set *Set) FirstRest() (interface{}, Seq, bool) {
+	el, restSet, ok := set.internalFirstRest()
 	if ok && restSet != nil {
 		restSet.size--
 	}
@@ -301,16 +301,16 @@ func (s *Set) FirstRest() (interface{}, Seq, bool) {
 }
 
 // Implementation of String for Stringer interface
-func (s *Set) String() string {
-	return ToString(s, "#{", "}#")
+func (set *Set) String() string {
+	return ToString(set, "#{", "}#")
 }
 
 // Returns the number of elements in the Set. Completes in O(1) time.
-func (s *Set) Size() uint64 {
-	if s == nil {
+func (set *Set) Size() uint64 {
+	if set == nil {
 		return 0
 	}
-	return s.size
+	return set.size
 }
 
 // Returns a Set with all of the elements of the original Set along with
