@@ -335,6 +335,26 @@ func (set *Set) Union(s Seq) *Set {
 	}
 }
 
+// Returns a Set with all of the elements in Seq that are also in Set. Completes
+// in O(M*log(N)), with M being the number of elements in the Seq and N the
+// number of elements in the Set
+func (set *Set) Intersection(s Seq) *Set {
+	if set == nil {
+		return nil
+	}
+
+	iset := NewSet()
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); !ok {
+			return iset
+		} else if _, ok = set.GetVal(el); ok {
+			iset, _ = iset.SetVal(el)
+		}
+	}
+}
+
 // Returns the elements in the Seq as a set. In general this completes in
 // O(N*log(N)) time (I think...). If the given Seq is already a Set it will
 // complete in O(1) time.

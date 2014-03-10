@@ -174,3 +174,29 @@ func TestUnion(t *T) {
 	assertSeqContentsNoOrder(s2, ints2, t)
 	assertSeqContentsNoOrder(su, intsu, t)
 }
+
+// Test that Intersection functions properly
+func TestIntersection(t *T) {
+	// Degenerate case
+	empty := NewSet()
+	t.Log("Degenerate case")
+	assertEmpty(empty.Intersection(empty), t)
+
+	ints1 := []interface{}{0, 1, 2}
+	ints2 := []interface{}{1, 2, 3}
+	ints3 := []interface{}{4, 5, 6}
+	intsi := []interface{}{1, 2}
+	s1 := NewSet(ints1...)
+	s2 := NewSet(ints2...)
+	s3 := NewSet(ints3...)
+
+	assertEmpty(s1.Intersection(empty), t)
+	assertEmpty(empty.Intersection(s1), t)
+
+	si := s1.Intersection(s2)
+	assertEmpty(s1.Intersection(s3), t)
+	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsNoOrder(s3, ints3, t)
+	assertSeqContentsNoOrder(si, intsi, t)
+}
