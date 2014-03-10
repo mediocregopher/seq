@@ -193,7 +193,7 @@ func (s *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
 	}
 
 	h := hash(val, i)
-	newkid, ok := s.kids[h].internalSetVal(val, i + 1)
+	newkid, ok := cs.kids[h].internalSetVal(val, i + 1)
 	cs.kids[h] = newkid
 	return cs, ok
 }
