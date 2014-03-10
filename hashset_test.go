@@ -153,3 +153,24 @@ func TestSetSize(t *T) {
 	assertValue(s.Size(), uint64(3), t)
 
 }
+
+// Test that Union functions properly
+func TestUnion(t *T) {
+	// Degenerate case
+	empty := NewSet()
+	assertEmpty(empty.Union(empty), t)
+
+	ints1 := []interface{}{0, 1, 2}
+	ints2 := []interface{}{3, 4, 5}
+	intsu := append(ints1, ints2...)
+	s1 := NewSet(ints1...)
+	s2 := NewSet(ints2...)
+
+	assertSeqContentsNoOrder(s1.Union(empty), ints1, t)
+	assertSeqContentsNoOrder(empty.Union(s1), ints1, t)
+
+	su := s1.Union(s2)
+	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsNoOrder(su, intsu, t)
+}
