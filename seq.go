@@ -19,10 +19,13 @@ type Seq interface {
 }
 
 // Returns the number of elements contained in the data structure. In general
-// this completes in O(N) time, except for Set for which it completes in O(1)
+// this completes in O(N) time, except for Set and HashMap for which it
+// completes in O(1)
 func Size(s Seq) uint64 {
 	switch st := s.(type) {
 	case *Set:
+		return st.Size()
+	case *HashMap:
 		return st.Size()
 	default:
 	}

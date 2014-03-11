@@ -231,9 +231,8 @@ func (set *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
 	return set, false
 }
 
-// Returns a new Set with the given value removed from it. Returns the removed
-// value (if any), the new Set, and whether or not the value was actually
-// removed. Completes in O(log(N)) time.
+// Returns a new Set with the given value removed from it and whether or not the
+// value was actually removed. Completes in O(log(N)) time.
 func (set *Set) DelVal(val interface{}) (*Set, bool) {
 	nset, ok := set.internalDelVal(val, 0)
 	if ok && nset != nil {
@@ -400,10 +399,13 @@ func (set *Set) SymDifference(s Seq) *Set {
 
 // Returns the elements in the Seq as a set. In general this completes in
 // O(N*log(N)) time (I think...). If the given Seq is already a Set it will
-// complete in O(1) time.
+// complete in O(1) time. If it is a HashMap it will complete in O(1) time, and
+// the resultant Set will be comprised of all KVs
 func ToSet(s Seq) *Set {
 	if set, ok := s.(*Set); ok {
 		return set
+	} else if hm, ok := s.(*HashMap); ok {
+		return hm.set
 	}
 	vals := ToSlice(s)
 	return NewSet(vals...)

@@ -4,7 +4,7 @@ import (
 	. "testing"
 )
 
-// Test creating a Seq and calling the Seq interface methods on it
+// Test creating a Set and calling the Seq interface methods on it
 func TestSetSeq(t *T) {
 	ints := []interface{}{1, "a", 5.0}
 
@@ -29,18 +29,18 @@ func TestSetVal(t *T) {
 	s := NewSet()
 	assertEmpty(s, t)
 	s, ok := s.SetVal(0)
-	assertSeqContentsNoOrder(s, []interface{}{0}, t)
+	assertSeqContentsSet(s, []interface{}{0}, t)
 	assertValue(ok, true, t)
 
 	s = NewSet(ints...)
 	s1, ok := s.SetVal(5)
-	assertSeqContentsNoOrder(s, ints, t)
-	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsSet(s, ints, t)
+	assertSeqContentsSet(s1, ints1, t)
 	assertValue(ok, true, t)
 
 	s2, ok := s1.SetVal(5)
-	assertSeqContentsNoOrder(s1, ints1, t)
-	assertSeqContentsNoOrder(s2, ints1, t)
+	assertSeqContentsSet(s1, ints1, t)
+	assertSeqContentsSet(s2, ints1, t)
 	assertValue(ok, false, t)
 }
 
@@ -60,29 +60,29 @@ func TestDelVal(t *T) {
 
 	s = NewSet(ints...)
 	s1, ok := s.DelVal(4)
-	assertSeqContentsNoOrder(s, ints, t)
-	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsSet(s, ints, t)
+	assertSeqContentsSet(s1, ints1, t)
 	assertValue(ok, true, t)
 
 	s1, ok = s1.DelVal(4)
-	assertSeqContentsNoOrder(s1, ints1, t)
+	assertSeqContentsSet(s1, ints1, t)
 	assertValue(ok, false, t)
 
 	// 0 is the value on the root node of s, which is kind of a special case. We
 	// want to test deleting it and setting a new value (which should get put on
 	// the root node).
 	s2, ok := s.DelVal(0)
-	assertSeqContentsNoOrder(s, ints, t)
-	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsSet(s, ints, t)
+	assertSeqContentsSet(s2, ints2, t)
 	assertValue(ok, true, t)
 
 	s2, ok = s2.DelVal(0)
-	assertSeqContentsNoOrder(s2, ints2, t)
+	assertSeqContentsSet(s2, ints2, t)
 	assertValue(ok, false, t)
 
 	s3, ok := s2.SetVal(5)
-	assertSeqContentsNoOrder(s2, ints2, t)
-	assertSeqContentsNoOrder(s3, ints3, t)
+	assertSeqContentsSet(s2, ints2, t)
+	assertSeqContentsSet(s3, ints3, t)
 	assertValue(ok, true, t)
 }
 
@@ -166,13 +166,13 @@ func TestUnion(t *T) {
 	s1 := NewSet(ints1...)
 	s2 := NewSet(ints2...)
 
-	assertSeqContentsNoOrder(s1.Union(empty), ints1, t)
-	assertSeqContentsNoOrder(empty.Union(s1), ints1, t)
+	assertSeqContentsSet(s1.Union(empty), ints1, t)
+	assertSeqContentsSet(empty.Union(s1), ints1, t)
 
 	su := s1.Union(s2)
-	assertSeqContentsNoOrder(s1, ints1, t)
-	assertSeqContentsNoOrder(s2, ints2, t)
-	assertSeqContentsNoOrder(su, intsu, t)
+	assertSeqContentsSet(s1, ints1, t)
+	assertSeqContentsSet(s2, ints2, t)
+	assertSeqContentsSet(su, intsu, t)
 }
 
 // Test that Intersection functions properly
@@ -194,10 +194,10 @@ func TestIntersection(t *T) {
 
 	si := s1.Intersection(s2)
 	assertEmpty(s1.Intersection(s3), t)
-	assertSeqContentsNoOrder(s1, ints1, t)
-	assertSeqContentsNoOrder(s2, ints2, t)
-	assertSeqContentsNoOrder(s3, ints3, t)
-	assertSeqContentsNoOrder(si, intsi, t)
+	assertSeqContentsSet(s1, ints1, t)
+	assertSeqContentsSet(s2, ints2, t)
+	assertSeqContentsSet(s3, ints3, t)
+	assertSeqContentsSet(si, intsi, t)
 }
 
 // Test that Difference functions properly
@@ -212,13 +212,13 @@ func TestDifference(t *T) {
 	s1 := NewSet(ints1...)
 	s2 := NewSet(ints2...)
 
-	assertSeqContentsNoOrder(s1.Difference(empty), ints1, t)
+	assertSeqContentsSet(s1.Difference(empty), ints1, t)
 	assertEmpty(empty.Difference(s1), t)
 
 	sd := s1.Difference(s2)
-	assertSeqContentsNoOrder(s1, ints1, t)
-	assertSeqContentsNoOrder(s2, ints2, t)
-	assertSeqContentsNoOrder(sd, intsd, t)
+	assertSeqContentsSet(s1, ints1, t)
+	assertSeqContentsSet(s2, ints2, t)
+	assertSeqContentsSet(sd, intsd, t)
 }
 
 // Test that SymDifference functions properly
@@ -233,11 +233,11 @@ func TestSymDifference(t *T) {
 	s1 := NewSet(ints1...)
 	s2 := NewSet(ints2...)
 
-	assertSeqContentsNoOrder(s1.SymDifference(empty), ints1, t)
-	assertSeqContentsNoOrder(empty.SymDifference(s1), ints1, t)
+	assertSeqContentsSet(s1.SymDifference(empty), ints1, t)
+	assertSeqContentsSet(empty.SymDifference(s1), ints1, t)
 
 	sd := s1.SymDifference(s2)
-	assertSeqContentsNoOrder(s1, ints1, t)
-	assertSeqContentsNoOrder(s2, ints2, t)
-	assertSeqContentsNoOrder(sd, intsd, t)
+	assertSeqContentsSet(s1, ints1, t)
+	assertSeqContentsSet(s2, ints2, t)
+	assertSeqContentsSet(sd, intsd, t)
 }

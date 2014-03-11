@@ -48,12 +48,29 @@ func assertSeqContentsNoOrderMap(s Seq, m map[interface{}]bool, t *testing.T) {
 // Asserts that the given Seq has all the elements, and only the elements
 // (duplicates removed), in the given slice, although no necessarily in the
 // order given in the slice
-func assertSeqContentsNoOrder(s Seq, ints []interface{}, t *testing.T) {
+func assertSeqContentsSet(s Seq, ints []interface{}, t *testing.T) {
 	m := map[interface{}]bool{}
 	for i := range ints {
 		m[ints[i]] = true
 	}
 	assertSeqContentsNoOrderMap(s, m, t)
+}
+
+func assertSeqContentsHashMap(s Seq, kvs []*KV, t *testing.T) {
+	m := map[interface{}]bool{}
+	for i := range kvs {
+		m[*kvs[i]] = true
+	}
+	ls := ToSlice(s)
+	if len(ls) != len(m) {
+		t.Fatalf("Slice contents wrong: %v not %v", ls, m)
+	}
+	for i := range ls {
+		kv := ls[i].(*KV)
+		if _, ok := m[*kv]; !ok {
+			t.Fatalf("Slice contents wrong: %v not %v", ls, m)
+		}
+	}
 }
 
 // Asserts that v1 is the same as v2
