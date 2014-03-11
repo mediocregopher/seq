@@ -2,6 +2,13 @@
 
 Clojure-like immutable data-structures and lazy lists for go.
 
+## Disclaimer
+
+This is not really intended for daily use. It's more of a toy and possibly
+something that could be built-upon to make something cooler. Go wasn't really
+built with generics in mind (and for good reason), so you lose a lot of safety
+and add a lot of ugliness when you use them.
+
 ## Installation
 
 ```
