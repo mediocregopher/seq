@@ -46,6 +46,11 @@ func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 	}
 }
 
+// Implementation of String for Stringer
+func (l *Lazy) String() string {
+	return ToString(l, "<<", ">>")
+}
+
 // Thunks are the building blocks a Lazy. A Thunk returns an element, another
 // Thunk, and a boolean representing if the call yielded any results or if it
 // was actually empty (true indicates it yielded results).
