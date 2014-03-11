@@ -22,7 +22,7 @@ or if you're using [goat][goat]:
 Check the [godocs][godocs] for the full API. Also, check out the Examples
 section below.
 
-Examples coming soon!
+[Examples][examples] are a good place to look too.
 
 ## About
 
@@ -80,3 +80,4 @@ Copyright Brian Picciano, 2014
 [goat]: https://github.com/mediocregopher/goat
 [godocs]: http://godoc.org/github.com/mediocregopher/seq
 [license]: /LICENSE
+[examples]: /examples
