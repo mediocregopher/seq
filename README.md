@@ -2,13 +2,6 @@
 
 Clojure-like immutable data-structures and lazy lists for go.
 
-## Disclaimer
-
-This is not really intended for daily use. It's more of a toy and possibly
-something that could be built-upon to make something cooler. Go wasn't really
-built with generics in mind (and for good reason), so you lose a lot of safety
-and add a lot of ugliness when you use them.
-
 ## Installation
 
 ```
@@ -26,56 +19,63 @@ or if you're using [goat][goat]:
 
 ## Usage
 
-Check the [godocs][godocs] for the full API. Also, check out the Examples
-section below.
-
-[Examples][examples] are a good place to look too.
+Check the [godocs][godocs] for the full API. [Examples][examples] are a good
+place to look too.
 
 ## About
 
 This library constitutes an attempt at bringing immutability and laziness to go
-in a thread-safe way.
+in a thread-safe way, at the cost of type-safety and code-cleanliness.
+
+There are four available types:
+
+* `List` - Single linked list
+* `Set` - Hash-tree based unordered set
+* `HashMap` - A simple key/value hash map built on top of `Set`
+* `Lazy` - Lazily evaluated sequence
+
+All four of these implement the `Seq` interface, which simply provides a way to
+iterate over the structure a single time.
 
 ### Immutability
 
-If you have any Seq data-structure, be it a `List`, `Set`, or `HashMap`, and you
-perform an operation on it (say adding an element to it) a new instance will be
-returned to you with the change, leaving the original in-place. Conceptually
-it's as if a copy is made on every operation. In reality Seq uses
-structure-sharing to minimize the amount of copying needed. For `Set`s and
-`HashMap`s there should be only two or three node copies per operation.
-Additionally, the actual values being held aren't being copied.
+All operations on seq's datastructures are immutable, meaning they won't effect
+the original variable but instead return a new one with the change in place.
+Conceptually a copy is done. In reality seq uses structure sharing so only a
+minimal amount of copying is actually necessary.
 
-There are multiple advantages to immutability, and most of them have been
-described in great depth elsewhere. Primary benefits are:
-
-* Code becomes easier to think about. You never have to worry about whether or
-  not a function you passed a variable into changed that variable. On the flip
-  side, when inside a function you never have to worry about whether or not
-  you're allowed to modify a variable.
-
-* Thread-safety comes free. Pass around variables with great abandon, there
-  won't ever be race-conditions caused by two threads modifying the same value
-  at the same time.
+Since all seq variables are immutable, they are also inherently thread-safe (or
+go-routine safe). They can be passed around and operated on by any number of
+go-routines with woeful abandon.
 
 ### Laziness
 
-Seq provides a common interface for all of its structures so that they can all
-be treated as sequential lists of elements. With this, Seq also provides
-multiple functions for iterating and modifying these sequences, such as `Map`,
-`Reduce`, `Filter`, and so on. These correspond to similar functions in other
-object oriented languages.
+The `Lazy` type is a special seq type which is conceptually similar to a
+linked-list. Where it differs is that it only evalutates its elements as needed,
+so if you only consume half of the "list" only half of the elements will
+actually be created.
 
-Where possible Seq also provides lazy forms of these functions (`LMap`,
-`LFilter`, etc...). These functions return a special `Lazy` type, which also
-implements the `Seq` interface. With `Lazy`, the next item in the sequence won't
-be evalutated until it's actually needed. So if you have a lazy map over a list
-but you only consume half the result, the map function will only be called on
-half the elements.
+Seq provides a number of methods which operate on types implementing the `Seq`
+interface and return a `Lazy`. These include `LMap`, `LFilter`, and `LTake`.
+Since `Lazy` also implements `Seq`, you can chain together lazy functions like
+so:
 
-Lazy sequences cache their results in a thread-safe way. So if you pass
-a reference to the same `Lazy` to multiple threads and they all consume it, each
-element is only evalutated once globally.
+```go
+result := seq.LFilter(filterFn, seq.LMap(mapFn, l))
+```
+
+In the above example, no intermediate lists are created like if you had used
+`Map` or `Filter`. Additionally, `Lazy` will cache its results, so iterating
+over `result` multiple times would not cause the `filterFn` and `mapFn`
+functions to be called more than once on each element each. This caching is
+thread-safe, so multiple go-routines can iterate over the same `Lazy` safely in
+all cases.
+
+## Disclaimer
+
+This library has its upsides and downsides, and is probably only truly useful
+for a minority of cases. But I had fun making it, and learned a lot, so I
+figured maybe someone else would to.
 
 # Legal
 
