@@ -48,7 +48,7 @@ func TestSetVal(t *T) {
 func TestDelVal(t *T) {
 	ints := []interface{}{0, 1, 2, 3, 4}
 	ints1 := []interface{}{0, 1, 2, 3}
-	ints2 := []interface{}{1, 2, 3 ,4}
+	ints2 := []interface{}{1, 2, 3, 4}
 	ints3 := []interface{}{1, 2, 3, 4, 5}
 
 	// Degenerate case

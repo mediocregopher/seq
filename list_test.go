@@ -14,7 +14,7 @@ func assertSaneList(l *List, t *T) {
 	}
 
 	size := Size(l)
-	assertValue(Size(l.next), size - 1, t)
+	assertValue(Size(l.next), size-1, t)
 	assertSaneList(l.next, t)
 }
 

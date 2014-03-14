@@ -19,7 +19,7 @@ func TestLazyBasic(t *T) {
 	ml := LMap(mapfn, l)
 
 	for i := 0; i < 10; i++ {
-		go func(){
+		go func() {
 			mlintl := ToSlice(ml)
 			if !intSlicesEq(mlintl, intl) {
 				panic("contents not right")

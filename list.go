@@ -107,7 +107,7 @@ func (l *List) Nth(n uint64) (interface{}, bool) {
 	var el interface{}
 	var ok bool
 	s := Seq(l)
-	for i := uint64(0);; i++ {
+	for i := uint64(0); ; i++ {
 		el, s, ok = s.FirstRest()
 		if !ok {
 			return nil, false
@@ -128,7 +128,7 @@ func ToList(s Seq) *List {
 	}
 
 	var el interface{}
-	for ret := NewList();; {
+	for ret := NewList(); ; {
 		if el, s, ok = s.FirstRest(); ok {
 			ret = ret.Prepend(el)
 		} else {
@@ -136,4 +136,3 @@ func ToList(s Seq) *List {
 		}
 	}
 }
-

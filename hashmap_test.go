@@ -55,7 +55,7 @@ func TestHashMapGet(t *T) {
 
 // Test setting values on a HashMap
 func TestHashMapSet(t *T) {
-	
+
 	// Set on empty
 	m := NewHashMap()
 	m1, ok := m.Set(1, "one")

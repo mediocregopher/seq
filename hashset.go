@@ -2,8 +2,8 @@ package seq
 
 import (
 	"fmt"
-	"reflect"
 	"hash/crc32"
+	"reflect"
 )
 
 // This is an implementation of a persistent tree, which will then be used as
@@ -50,7 +50,7 @@ func hash(v interface{}, i uint32) uint32 {
 		return uint32(vt) % ARITY
 	case float64:
 		return uint32(vt) % ARITY
-	
+
 	case string:
 		return crc32.ChecksumIEEE([]byte(vt)) % ARITY
 
@@ -88,7 +88,7 @@ func equal(v1, v2 interface{}) bool {
 }
 
 // The number of children each node in Set (implemented as a hash tree) can have
-const ARITY = 32;
+const ARITY = 32
 
 // A Set is an implementation of Seq in the form of a persistant hash-tree. All
 // public operations on it return a new, immutable form of the modified
@@ -103,7 +103,7 @@ const ARITY = 32;
 type Set struct {
 
 	// The value being held
-	val  interface{}
+	val interface{}
 
 	// Whether or not the held value has been set yet. Needed because the value
 	// could be nil
@@ -156,10 +156,10 @@ func (set *Set) setValDirty(val interface{}, i uint32) {
 	if ok, _ := set.shallowTrySetOrInit(val); ok {
 		return
 	}
-	
+
 	h := hash(val, i)
 	if kid := set.kids[h]; kid != nil {
-		kid.setValDirty(val, i + 1)
+		kid.setValDirty(val, i+1)
 	} else {
 		set.kids[h] = NewSet(val)
 	}
@@ -193,7 +193,7 @@ func (set *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
 	}
 
 	h := hash(val, i)
-	newkid, ok := cset.kids[h].internalSetVal(val, i + 1)
+	newkid, ok := cset.kids[h].internalSetVal(val, i+1)
 	cset.kids[h] = newkid
 	return cset, ok
 }
@@ -223,7 +223,7 @@ func (set *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
 	}
 
 	h := hash(val, i)
-	if newkid, ok := set.kids[h].internalDelVal(val, i + 1); ok {
+	if newkid, ok := set.kids[h].internalDelVal(val, i+1); ok {
 		cset := set.clone()
 		cset.kids[h] = newkid
 		return cset, true
@@ -252,7 +252,7 @@ func (set *Set) internalGetVal(val interface{}, i uint32) (interface{}, bool) {
 	}
 
 	h := hash(val, i)
-	return set.kids[h].internalGetVal(val, i + 1)
+	return set.kids[h].internalGetVal(val, i+1)
 }
 
 // Returns a value from the Set, along with  a boolean indiciating whether or

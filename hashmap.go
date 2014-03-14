@@ -33,7 +33,7 @@ func (kv *KV) Equal(v interface{}) bool {
 
 // Implementation of String for Stringer
 func (kv *KV) String() string {
-	return fmt.Sprintf("%v -> %v", kv.Key, kv.Val) 
+	return fmt.Sprintf("%v -> %v", kv.Key, kv.Val)
 }
 
 // HashMaps are actually built on top of Sets, just with some added convenience

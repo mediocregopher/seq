@@ -1,14 +1,14 @@
 package seq
 
 import (
-	"github.com/mediocregopher/seq"
 	"fmt"
+	"github.com/mediocregopher/seq"
 )
 
 // numberThunk is used to create a sequence of inifinte, sequential integers
 func numberThunk(i int) seq.Thunk {
 	return func() (interface{}, seq.Thunk, bool) {
-		return i, numberThunk(i+1), true
+		return i, numberThunk(i + 1), true
 	}
 }
 

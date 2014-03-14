@@ -31,7 +31,7 @@ func Size(s Seq) uint64 {
 	}
 
 	var ok bool
-	for i := uint64(0);; {
+	for i := uint64(0); ; {
 		if _, s, ok = s.FirstRest(); ok {
 			i++
 		} else {
@@ -46,7 +46,7 @@ func Size(s Seq) uint64 {
 func ToSlice(s Seq) []interface{} {
 	var el interface{}
 	var ok bool
-	for ret := make([]interface{}, 0, 8);; {
+	for ret := make([]interface{}, 0, 8); ; {
 		if el, s, ok = s.FirstRest(); ok {
 			ret = append(ret, el)
 		} else {
@@ -218,7 +218,7 @@ func Take(n uint64, s Seq) Seq {
 	l := NewList()
 	var el interface{}
 	var ok bool
-	for i := uint64(0); i < n; i++{
+	for i := uint64(0); i < n; i++ {
 		el, s, ok = s.FirstRest()
 		if !ok {
 			break
@@ -250,7 +250,7 @@ func TakeWhile(pred func(interface{}) bool, s Seq) Seq {
 // time.
 func Drop(n uint64, s Seq) Seq {
 	var ok bool
-	for i := uint64(0); i < n; i++{
+	for i := uint64(0); i < n; i++ {
 		_, s, ok = s.FirstRest()
 		if !ok {
 			break

@@ -7,16 +7,16 @@ package seq
 // multiple routines can interact with the same Lazy pointer at the same time
 // but the contents will only be evalutated once.
 type Lazy struct {
-	this  interface{}
-	next  *Lazy
-	ok    bool
-	ch    chan struct{}
+	this interface{}
+	next *Lazy
+	ok   bool
+	ch   chan struct{}
 }
 
 // Given a Thunk, returns a Lazy around that Thunk.
 func NewLazy(t Thunk) *Lazy {
 	l := &Lazy{ch: make(chan struct{})}
-	go func(){
+	go func() {
 		l.ch <- struct{}{}
 		el, next, ok := t()
 		l.this = el
@@ -100,7 +100,7 @@ func takeThunk(n uint64, s Seq) Thunk {
 		if !ok || n == 0 {
 			return nil, nil, false
 		}
-		return el, takeThunk(n - 1, ns), true
+		return el, takeThunk(n-1, ns), true
 	}
 }
 
