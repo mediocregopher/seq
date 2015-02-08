@@ -9,11 +9,13 @@ import (
 // This is an implementation of a persistent tree, which will then be used as
 // the basis for vectors, hash maps, and hash sets.
 
+// Setable is an interface for customizing how items being put in a Set are
+// compared to each other to determine their equality
 type Setable interface {
 
 	// Returns an integer for the value. For two equivalent values (as defined
-	// by ==) Hash(i) should always return the same number. For multiple values
-	// of i, Hash should return different values if possible.
+	// by Equal) Hash(i) should always return the same number. For multiple
+	// values of i, Hash should return different values if possible.
 	Hash(uint32) uint32
 
 	// Given an arbitrary value found in a Set, returns whether or not the two
@@ -82,9 +84,8 @@ func equal(v1, v2 interface{}) bool {
 			return true
 		}
 		return false
-	} else {
-		return v1 == v2
 	}
+	return v1 == v2
 }
 
 // The number of children each node in Set (implemented as a hash tree) can have
@@ -116,7 +117,8 @@ type Set struct {
 	size uint64
 }
 
-// Returns a new Set of the given elements (or no elements, for an empty set)
+// NewSet returns a new Set of the given elements (or no elements, for an empty
+// set)
 func NewSet(vals ...interface{}) *Set {
 	if len(vals) == 0 {
 		return nil
@@ -198,9 +200,9 @@ func (set *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
 	return cset, ok
 }
 
-// Returns a new Set with the given value added to it. Also returns whether or
-// not this is the first time setting this value (false if it was already there
-// and was overwritten). Completes in O(log(N)) time.
+// SetVal returns a new Set with the given value added to it. Also returns
+// whether or not this is the first time setting this value (false if it was
+// already there and was overwritten). Completes in O(log(N)) time.
 func (set *Set) SetVal(val interface{}) (*Set, bool) {
 	nset, ok := set.internalSetVal(val, 0)
 	if ok {
@@ -235,8 +237,8 @@ func (set *Set) internalDelVal(val interface{}, i uint32) (*Set, bool) {
 	return set, false
 }
 
-// Returns a new Set with the given value removed from it and whether or not the
-// value was actually removed. Completes in O(log(N)) time.
+// DelVal returns a new Set with the given value removed from it and whether or
+// not the value was actually removed. Completes in O(log(N)) time.
 func (set *Set) DelVal(val interface{}) (*Set, bool) {
 	nset, ok := set.internalDelVal(val, 0)
 	if ok && nset != nil {
@@ -259,8 +261,8 @@ func (set *Set) internalGetVal(val interface{}, i uint32) (interface{}, bool) {
 	return set.kids[h].internalGetVal(val, i+1)
 }
 
-// Returns a value from the Set, along with  a boolean indiciating whether or
-// not the value was found. Completes in O(log(N)) time.
+// GetVal returns a value from the Set, along with  a boolean indiciating
+// whether or not the value was found. Completes in O(log(N)) time.
 func (set *Set) GetVal(val interface{}) (interface{}, bool) {
 	return set.internalGetVal(val, 0)
 }
@@ -294,7 +296,8 @@ func (set *Set) internalFirstRest() (interface{}, *Set, bool) {
 	return set.val, nil, true
 }
 
-// Implementation of FirstRest for Seq interface. Completes in O(log(N)) time.
+// FirstRest is an implementation of FirstRest for Seq interface. Completes in
+// O(log(N)) time.
 func (set *Set) FirstRest() (interface{}, Seq, bool) {
 	el, restSet, ok := set.internalFirstRest()
 	if ok && restSet != nil {
@@ -308,7 +311,7 @@ func (set *Set) String() string {
 	return ToString(set, "#{", "}#")
 }
 
-// Returns the number of elements in the Set. Completes in O(1) time.
+// Size returns the number of elements in the Set. Completes in O(1) time.
 func (set *Set) Size() uint64 {
 	if set == nil {
 		return 0
@@ -316,7 +319,7 @@ func (set *Set) Size() uint64 {
 	return set.size
 }
 
-// Returns a Set with all of the elements of the original Set along with
+// Union returns a Set with all of the elements of the original Set along with
 // everything in the given Seq. If an element is present in both the Set and the
 // Seq, the element in the Seq overwrites. Completes in O(M*log(N)), with M
 // being the number of elements in the Seq and N the number of elements in the
@@ -338,9 +341,9 @@ func (set *Set) Union(s Seq) *Set {
 	}
 }
 
-// Returns a Set with all of the elements in Seq that are also in Set. Completes
-// in O(M*log(N)), with M being the number of elements in the Seq and N the
-// number of elements in the Set
+// Intersection returns a Set with all of the elements in Seq that are also in
+// Set. Completes in O(M*log(N)), with M being the number of elements in the Seq
+// and N the number of elements in the Set
 func (set *Set) Intersection(s Seq) *Set {
 	if set == nil {
 		return nil
@@ -358,9 +361,9 @@ func (set *Set) Intersection(s Seq) *Set {
 	}
 }
 
-// Returns a Set of all elements in the original Set that aren't in the Seq.
-// Completes in O(M*log(N)), with M being the number of elements in the Seq and
-// N the number of elements in the Set
+// Difference returns a Set of all elements in the original Set that aren't in
+// the Seq. Completes in O(M*log(N)), with M being the number of elements in the
+// Seq and N the number of elements in the Set
 func (set *Set) Difference(s Seq) *Set {
 	if set == nil {
 		return nil
@@ -372,15 +375,14 @@ func (set *Set) Difference(s Seq) *Set {
 	for {
 		if el, s, ok = s.FirstRest(); !ok {
 			return cset
-		} else {
-			cset, _ = cset.DelVal(el)
 		}
+		cset, _ = cset.DelVal(el)
 	}
 }
 
-// Returns a Set of all elements that are either in the original Set or the
-// given Seq, but not in both. Completes in O(M*log(N)), with M being the number
-// of elements in the Seq and N the number of elements in the Set.
+// SymDifference returns a Set of all elements that are either in the original
+// Set or the given Seq, but not in both. Completes in O(M*log(N)), with M being
+// the number of elements in the Seq and N the number of elements in the Set.
 func (set *Set) SymDifference(s Seq) *Set {
 	if set == nil {
 		return ToSet(s)
@@ -401,7 +403,7 @@ func (set *Set) SymDifference(s Seq) *Set {
 	}
 }
 
-// Returns the elements in the Seq as a set. In general this completes in
+// ToSet returns the elements in the Seq as a set. In general this completes in
 // O(N*log(N)) time (I think...). If the given Seq is already a Set it will
 // complete in O(1) time. If it is a HashMap it will complete in O(1) time, and
 // the resultant Set will be comprised of all KVs

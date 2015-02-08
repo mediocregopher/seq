@@ -5,8 +5,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/mediocregopher/seq"
 	"time"
+
+	"github.com/mediocregopher/seq"
 )
 
 func F1(i interface{}) interface{} {
@@ -37,7 +38,6 @@ func main() {
 		fmt.Printf("el is %d\n", el)
 		time.Sleep(500 * time.Millisecond)
 	}
-
 
 	// To show that the original list is unchanged and that the lazy list's
 	// results are cached. F1/F2 aren't called again

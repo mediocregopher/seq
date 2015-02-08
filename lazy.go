@@ -1,11 +1,11 @@
 package seq
 
-// A Lazy is an implementation of a Seq which only actually evaluates its
-// contents as those contents become needed. Lazys can be chained together, so
-// if you have three steps in a pipeline there aren't two intermediate Seqs
-// created, only the final resulting one. Lazys are also thread-safe, so
-// multiple routines can interact with the same Lazy pointer at the same time
-// but the contents will only be evalutated once.
+// Lazy is an implementation of a Seq which only actually evaluates its contents
+// as those contents become needed. Lazys can be chained together, so if you
+// have three steps in a pipeline there aren't two intermediate Seqs created,
+// only the final resulting one. Lazys are also thread-safe, so multiple
+// routines can interact with the same Lazy pointer at the same time but the
+// contents will only be evalutated once.
 type Lazy struct {
 	this interface{}
 	next *Lazy
@@ -13,7 +13,7 @@ type Lazy struct {
 	ch   chan struct{}
 }
 
-// Given a Thunk, returns a Lazy around that Thunk.
+// NewLazy returns a Lazy around the Given Thunk
 func NewLazy(t Thunk) *Lazy {
 	l := &Lazy{ch: make(chan struct{})}
 	go func() {
@@ -27,7 +27,8 @@ func NewLazy(t Thunk) *Lazy {
 	return l
 }
 
-// Implementation of FirstRest for Seq interface. Completes in O(1) time.
+// FirstRest is an implementation of FirstRest for Seq interface. Completes in
+// O(1) time.
 func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 	if l == nil {
 		return nil, l, false
@@ -41,17 +42,16 @@ func (l *Lazy) FirstRest() (interface{}, Seq, bool) {
 
 	if l.ok {
 		return l.this, l.next, true
-	} else {
-		return nil, nil, false
 	}
+	return nil, nil, false
 }
 
-// Implementation of String for Stringer
+// String is an implementation of String for Stringer
 func (l *Lazy) String() string {
 	return ToString(l, "<<", ">>")
 }
 
-// Thunks are the building blocks a Lazy. A Thunk returns an element, another
+// Thunk is the building block of a Lazy. A Thunk returns an element, another
 // Thunk, and a boolean representing if the call yielded any results or if it
 // was actually empty (true indicates it yielded results).
 type Thunk func() (interface{}, Thunk, bool)
@@ -67,7 +67,7 @@ func mapThunk(fn func(interface{}) interface{}, s Seq) Thunk {
 	}
 }
 
-// Lazy implementation of Map
+// LMap is a lazy implementation of Map
 func LMap(fn func(interface{}) interface{}, s Seq) Seq {
 	return NewLazy(mapThunk(fn, s))
 }
@@ -82,14 +82,13 @@ func filterThunk(fn func(interface{}) bool, s Seq) Thunk {
 
 			if keep := fn(el); keep {
 				return el, filterThunk(fn, ns), true
-			} else {
-				s = ns
 			}
+			s = ns
 		}
 	}
 }
 
-// Lazy implementation of Filter
+// LFilter is a lazy implementation of Filter
 func LFilter(fn func(interface{}) bool, s Seq) Seq {
 	return NewLazy(filterThunk(fn, s))
 }
@@ -104,7 +103,7 @@ func takeThunk(n uint64, s Seq) Thunk {
 	}
 }
 
-// Lazy implementation of Take
+// LTake is a lazy implementation of Take
 func LTake(n uint64, s Seq) Seq {
 	return NewLazy(takeThunk(n, s))
 }
@@ -119,7 +118,7 @@ func takeWhileThunk(fn func(interface{}) bool, s Seq) Thunk {
 	}
 }
 
-// Lazy implementation of TakeWhile
+// LTakeWhile is a lazy implementation of TakeWhile
 func LTakeWhile(fn func(interface{}) bool, s Seq) Seq {
 	return NewLazy(takeWhileThunk(fn, s))
 }
@@ -134,9 +133,9 @@ func toLazyThunk(s Seq) Thunk {
 	}
 }
 
-// Returns the Seq as a Lazy. Pointless for linked-lists, but possibly useful
-// for other implementations where FirstRest might be costly and the same Seq
-// needs to be iterated over many times.
+// ToLazy returns the Seq as a Lazy. Pointless for linked-lists, but possibly
+// useful for other implementations where FirstRest might be costly and the same
+// Seq needs to be iterated over many times.
 func ToLazy(s Seq) *Lazy {
 	return NewLazy(toLazyThunk(s))
 }

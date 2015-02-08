@@ -3,12 +3,13 @@ package main
 // A possibly useful example of constructing our own lazy list
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/mediocregopher/seq"
 	"io"
 	"os"
-	"bufio"
 	"strings"
+
+	"github.com/mediocregopher/seq"
 )
 
 // Thunks are weird, but they are what's needed in order to create Lazys. This

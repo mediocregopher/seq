@@ -3,13 +3,14 @@ package main
 // A possibly useful example of implementing Seq on top of an io.Reader
 
 import (
-	"strings"
-	"strconv"
-	"fmt"
-	"github.com/mediocregopher/seq"
 	"bufio"
+	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
+
+	"github.com/mediocregopher/seq"
 )
 
 // SeqIoReader is a simple wrapper around a bufio.Reader

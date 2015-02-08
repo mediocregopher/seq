@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/mediocregopher/seq"
 )
 
@@ -13,7 +14,7 @@ func Inc(i interface{}) interface{} {
 }
 
 func Even(i interface{}) bool {
-	return i.(int) % 2 == 0
+	return i.(int)%2 == 0
 }
 
 func main() {
@@ -26,7 +27,7 @@ func main() {
 	}
 	l = seq.ToList(seq.Reverse(lpost)).PrependSeq(l)
 	// At this point l = (0 1 2 3 4 5 6 8 9)
-	
+
 	lMF := seq.Filter(Even, seq.Map(Inc, l))
 	lFM := seq.Map(Inc, seq.Filter(Even, l))
 
