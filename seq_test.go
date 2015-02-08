@@ -2,6 +2,8 @@ package seq
 
 import (
 	. "testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Tests the FirstRest, Size, and ToSlice methods of a Seq
@@ -9,12 +11,12 @@ func testSeqGen(t *T, s Seq, ints []interface{}) Seq {
 	intsl := uint64(len(ints))
 	for i := range ints {
 		assertSaneList(ToList(s), t)
-		assertValue(Size(s), intsl-uint64(i), t)
-		assertSeqContents(s, ints[i:], t)
+		assert.Equal(t, intsl-uint64(i), Size(s))
+		assert.Equal(t, ints[i:], ToSlice(s))
 
 		first, rest, ok := s.FirstRest()
-		assertValue(ok, true, t)
-		assertValue(first, ints[i], t)
+		assert.Equal(t, true, ok)
+		assert.Equal(t, ints[i], first)
 
 		s = rest
 	}
@@ -32,12 +34,13 @@ func testSeqNoOrderGen(t *T, s Seq, ints []interface{}) Seq {
 
 	for i := range ints {
 		assertSaneList(ToList(s), t)
-		assertValue(Size(s), intsl-uint64(i), t)
-		assertSeqContentsNoOrderMap(s, m, t)
+		assert.Equal(t, intsl-uint64(i), Size(s))
+		assertSeqContentsNoOrderMap(t, m, s)
 
 		first, rest, ok := s.FirstRest()
-		assertValue(ok, true, t)
-		assertInMap(first, m, t)
+		assert.Equal(t, true, ok)
+		_, ok = m[first]
+		assert.Equal(t, true, ok)
 
 		delete(m, first)
 		s = rest
@@ -51,14 +54,14 @@ func TestReverse(t *T) {
 	intl := []interface{}{3, 2, 1}
 	l := NewList(intl...)
 	nl := Reverse(l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{1, 2, 3}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{1, 2, 3}, ToSlice(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = Reverse(l)
-	assertEmpty(l, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, Size(nl))
 }
 
 func testMapGen(t *T, mapFn func(func(interface{}) interface{}, Seq) Seq) {
@@ -70,14 +73,14 @@ func testMapGen(t *T, mapFn func(func(interface{}) interface{}, Seq) Seq) {
 	intl := []interface{}{1, 2, 3}
 	l := NewList(intl...)
 	nl := mapFn(fn, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{2, 3, 4}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{2, 3, 4}, ToSlice(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = mapFn(fn, l)
-	assertEmpty(l, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, Size(nl))
 }
 
 // Test mapping over a Seq
@@ -100,22 +103,22 @@ func TestReduce(t *T) {
 	intl := []interface{}{1, 2, 3, 4}
 	l := NewList(intl...)
 	r := Reduce(fn, 0, l)
-	assertSeqContents(l, intl, t)
-	assertValue(r, 10, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 10, r)
 
 	// Short-circuit case
 	fns := func(acc, el interface{}) (interface{}, bool) {
 		return acc.(int) + el.(int), el.(int) > 2
 	}
 	r = Reduce(fns, 0, l)
-	assertSeqContents(l, intl, t)
-	assertValue(r, 6, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 6, r)
 
 	// Degenerate case
 	l = NewList()
 	r = Reduce(fn, 0, l)
-	assertEmpty(l, t)
-	assertValue(r, 0, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, r)
 }
 
 // Test the Any function
@@ -128,24 +131,24 @@ func TestAny(t *T) {
 	intl := []interface{}{1, 2, 3, 4}
 	l := NewList(intl...)
 	r, ok := Any(fn, l)
-	assertSeqContents(l, intl, t)
-	assertValue(r, 4, t)
-	assertValue(ok, true, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 4, r)
+	assert.Equal(t, true, ok)
 
 	// Value not found case
 	intl = []interface{}{1, 2, 3}
 	l = NewList(intl...)
 	r, ok = Any(fn, l)
-	assertSeqContents(l, intl, t)
-	assertValue(r, nil, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, nil, r)
+	assert.Equal(t, false, ok)
 
 	// Degenerate case
 	l = NewList()
 	r, ok = Any(fn, l)
-	assertEmpty(l, t)
-	assertValue(r, nil, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, nil, r)
+	assert.Equal(t, false, ok)
 }
 
 // Test the All function
@@ -158,21 +161,21 @@ func TestAll(t *T) {
 	intl := []interface{}{4, 5, 6}
 	l := NewList(intl...)
 	ok := All(fn, l)
-	assertSeqContents(l, intl, t)
-	assertValue(ok, true, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, true, ok)
 
 	// Not all match case
 	intl = []interface{}{3, 4, 2, 5}
 	l = NewList(intl...)
 	ok = All(fn, l)
-	assertSeqContents(l, intl, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, false, ok)
 
 	// Degenerate case
 	l = NewList()
 	ok = All(fn, l)
-	assertEmpty(l, t)
-	assertValue(ok, true, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, true, ok)
 }
 
 func testFilterGen(t *T, filterFn func(func(interface{}) bool, Seq) Seq) {
@@ -184,14 +187,14 @@ func testFilterGen(t *T, filterFn func(func(interface{}) bool, Seq) Seq) {
 	intl := []interface{}{1, 2, 3, 4, 5}
 	l := NewList(intl...)
 	r := filterFn(fn, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(r, []interface{}{1, 3, 5}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{1, 3, 5}, ToSlice(r))
 
 	// Degenerate cases
 	l = NewList()
 	r = filterFn(fn, l)
-	assertEmpty(l, t)
-	assertEmpty(r, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, Size(r))
 }
 
 // Test the Filter function
@@ -215,16 +218,16 @@ func TestFlatten(t *T) {
 	intl := []interface{}{-1, l1, l2, 6, blank, 7}
 	l := NewList(intl...)
 	nl := Flatten(l)
-	assertSeqContents(l1, intl1, t)
-	assertSeqContents(l2, intl2, t)
-	assertEmpty(blank, t)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{-1, 0, 1, 2, 3, 4, 5, 6, 7}, t)
+	assert.Equal(t, intl1, ToSlice(l1))
+	assert.Equal(t, intl2, ToSlice(l2))
+	assert.Equal(t, 0, Size(blank))
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{-1, 0, 1, 2, 3, 4, 5, 6, 7}, ToSlice(nl))
 
 	// Degenerate case
 	nl = Flatten(blank)
-	assertEmpty(blank, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(blank))
+	assert.Equal(t, 0, Size(nl))
 }
 
 func testTakeGen(t *T, takeFn func(uint64, Seq) Seq) {
@@ -232,27 +235,27 @@ func testTakeGen(t *T, takeFn func(uint64, Seq) Seq) {
 	intl := []interface{}{0, 1, 2, 3, 4}
 	l := NewList(intl...)
 	nl := takeFn(3, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{0, 1, 2}, ToSlice(nl))
 
 	// Edge cases
 	nl = takeFn(5, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, intl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, intl, ToSlice(nl))
 
 	nl = takeFn(6, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, intl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, intl, ToSlice(nl))
 
 	// Degenerate cases
 	empty := NewList()
 	nl = takeFn(1, empty)
-	assertEmpty(empty, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(empty))
+	assert.Equal(t, 0, Size(nl))
 
 	nl = takeFn(0, l)
-	assertSeqContents(l, intl, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 0, Size(nl))
 }
 
 // Test taking from a Seq
@@ -274,27 +277,27 @@ func testTakeWhileGen(t *T, takeWhileFn func(func(interface{}) bool, Seq) Seq) {
 	intl := []interface{}{0, 1, 2, 3, 4, 5}
 	l := NewList(intl...)
 	nl := takeWhileFn(pred, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{0, 1, 2}, ToSlice(nl))
 
 	// Edge cases
 	intl = []interface{}{5, 5, 5}
 	l = NewList(intl...)
 	nl = takeWhileFn(pred, l)
-	assertSeqContents(l, intl, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 0, Size(nl))
 
 	intl = []interface{}{0, 1, 2}
 	l = NewList(intl...)
 	nl = takeWhileFn(pred, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{0, 1, 2}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{0, 1, 2}, ToSlice(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = takeWhileFn(pred, l)
-	assertEmpty(l, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, Size(nl))
 }
 
 // Test taking from a Seq until a given condition
@@ -313,27 +316,27 @@ func TestDrop(t *T) {
 	intl := []interface{}{0, 1, 2, 3, 4}
 	l := NewList(intl...)
 	nl := Drop(3, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{3, 4}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{3, 4}, ToSlice(nl))
 
 	// Edge cases
 	nl = Drop(5, l)
-	assertSeqContents(l, intl, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 0, Size(nl))
 
 	nl = Drop(6, l)
-	assertSeqContents(l, intl, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 0, Size(nl))
 
 	// Degenerate cases
 	empty := NewList()
 	nl = Drop(1, empty)
-	assertEmpty(empty, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(empty))
+	assert.Equal(t, 0, Size(nl))
 
 	nl = Drop(0, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, intl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, intl, ToSlice(nl))
 }
 
 // Test dropping from a Seq until a given condition
@@ -346,25 +349,25 @@ func TestDropWhile(t *T) {
 	intl := []interface{}{0, 1, 2, 3, 4, 5}
 	l := NewList(intl...)
 	nl := DropWhile(pred, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{3, 4, 5}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{3, 4, 5}, ToSlice(nl))
 
 	// Edge cases
 	intl = []interface{}{5, 5, 5}
 	l = NewList(intl...)
 	nl = DropWhile(pred, l)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, intl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, intl, ToSlice(nl))
 
 	intl = []interface{}{0, 1, 2}
 	l = NewList(intl...)
 	nl = DropWhile(pred, l)
-	assertSeqContents(l, intl, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 0, Size(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = DropWhile(pred, l)
-	assertEmpty(l, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, 0, Size(nl))
 }

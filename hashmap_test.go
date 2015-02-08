@@ -2,6 +2,8 @@ package seq
 
 import (
 	. "testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func kvints(kvs ...*KV) ([]*KV, []interface{}) {
@@ -24,7 +26,7 @@ func TestHashMapSeq(t *T) {
 	ms := testSeqNoOrderGen(t, m, ints)
 
 	// ms should be empty at this point
-	assertEmpty(ms, t)
+	assert.Equal(t, 0, Size(ms))
 }
 
 // Test getting values from a HashMap
@@ -36,21 +38,21 @@ func TestHashMapGet(t *T) {
 
 	// Degenerate case
 	m := NewHashMap()
-	assertEmpty(m, t)
+	assert.Equal(t, 0, Size(m))
 	v, ok := m.Get(1)
-	assertValue(v, nil, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, nil, v)
+	assert.Equal(t, false, ok)
 
 	m = NewHashMap(kvs...)
 	v, ok = m.Get(1)
-	assertSeqContentsHashMap(m, kvs, t)
-	assertValue(v, "one", t)
-	assertValue(ok, true, t)
+	assertSeqContentsHashMap(t, kvs, m)
+	assert.Equal(t, "one", v)
+	assert.Equal(t, true, ok)
 
 	v, ok = m.Get(3)
-	assertSeqContentsHashMap(m, kvs, t)
-	assertValue(v, nil, t)
-	assertValue(ok, false, t)
+	assertSeqContentsHashMap(t, kvs, m)
+	assert.Equal(t, nil, v)
+	assert.Equal(t, false, ok)
 }
 
 // Test setting values on a HashMap
@@ -59,21 +61,21 @@ func TestHashMapSet(t *T) {
 	// Set on empty
 	m := NewHashMap()
 	m1, ok := m.Set(1, "one")
-	assertEmpty(m, t)
-	assertSeqContentsHashMap(m1, []*KV{KeyVal(1, "one")}, t)
-	assertValue(ok, true, t)
+	assert.Equal(t, 0, Size(m))
+	assertSeqContentsHashMap(t, []*KV{KeyVal(1, "one")}, m1)
+	assert.Equal(t, true, ok)
 
 	// Set on same key
 	m2, ok := m1.Set(1, "wat")
-	assertSeqContentsHashMap(m1, []*KV{KeyVal(1, "one")}, t)
-	assertSeqContentsHashMap(m2, []*KV{KeyVal(1, "wat")}, t)
-	assertValue(ok, false, t)
+	assertSeqContentsHashMap(t, []*KV{KeyVal(1, "one")}, m1)
+	assertSeqContentsHashMap(t, []*KV{KeyVal(1, "wat")}, m2)
+	assert.Equal(t, false, ok)
 
 	// Set on second new key
 	m3, ok := m2.Set(2, "two")
-	assertSeqContentsHashMap(m2, []*KV{KeyVal(1, "wat")}, t)
-	assertSeqContentsHashMap(m3, []*KV{KeyVal(1, "wat"), KeyVal(2, "two")}, t)
-	assertValue(ok, true, t)
+	assertSeqContentsHashMap(t, []*KV{KeyVal(1, "wat")}, m2)
+	assertSeqContentsHashMap(t, []*KV{KeyVal(1, "wat"), KeyVal(2, "two")}, m3)
+	assert.Equal(t, true, ok)
 
 }
 
@@ -93,21 +95,21 @@ func TestHashMapDel(t *T) {
 	// Degenerate case
 	m := NewHashMap()
 	m1, ok := m.Del(1)
-	assertEmpty(m, t)
-	assertEmpty(m1, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, 0, Size(m))
+	assert.Equal(t, 0, Size(m1))
+	assert.Equal(t, false, ok)
 
 	// Delete actual key
 	m = NewHashMap(kvs...)
 	m1, ok = m.Del(1)
-	assertSeqContentsHashMap(m, kvs, t)
-	assertSeqContentsHashMap(m1, kvs1, t)
-	assertValue(ok, true, t)
+	assertSeqContentsHashMap(t, kvs, m)
+	assertSeqContentsHashMap(t, kvs1, m1)
+	assert.Equal(t, true, ok)
 
 	// Delete it again!
 	m2, ok := m1.Del(1)
-	assertSeqContentsHashMap(m1, kvs1, t)
-	assertSeqContentsHashMap(m2, kvs1, t)
-	assertValue(ok, false, t)
+	assertSeqContentsHashMap(t, kvs1, m1)
+	assertSeqContentsHashMap(t, kvs1, m2)
+	assert.Equal(t, false, ok)
 
 }

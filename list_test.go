@@ -2,6 +2,8 @@ package seq
 
 import (
 	. "testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Asserts that the given list is properly formed and has all of its size fields
@@ -9,12 +11,12 @@ import (
 func assertSaneList(l *List, t *T) {
 	if Size(l) == 0 {
 		var nilpointer *List
-		assertValue(l, nilpointer, t)
+		assert.Equal(t, nilpointer, l)
 		return
 	}
 
 	size := Size(l)
-	assertValue(Size(l.next), size-1, t)
+	assert.Equal(t, size-1, Size(l.next))
 	assertSaneList(l.next, t)
 }
 
@@ -29,22 +31,22 @@ func TestListSeq(t *T) {
 	// sl should be empty at this point
 	l = ToList(sl)
 	var nilpointer *List
-	assertEmpty(l, t)
-	assertValue(l, nilpointer, t)
-	assertValue(len(ToSlice(l)), 0, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, nilpointer, l)
+	assert.Equal(t, 0, len(ToSlice(l)))
 
 	// Testing creation of empty List.
 	emptyl := NewList()
-	assertValue(emptyl, nilpointer, t)
+	assert.Equal(t, nilpointer, emptyl)
 }
 
 // Test the string representation of a List
 func TestStringSeq(t *T) {
 	l := NewList(0, 1, 2, 3)
-	assertValue(l.String(), "( 0 1 2 3 )", t)
+	assert.Equal(t, "( 0 1 2 3 )", l.String())
 
 	l = NewList(0, 1, 2, NewList(3, 4), 5, NewList(6, 7, 8))
-	assertValue(l.String(), "( 0 1 2 ( 3 4 ) 5 ( 6 7 8 ) )", t)
+	assert.Equal(t, "( 0 1 2 ( 3 4 ) 5 ( 6 7 8 ) )", l.String())
 }
 
 // Test prepending an element to the beginning of a list
@@ -55,15 +57,15 @@ func TestPrepend(t *T) {
 	nl := l.Prepend(4)
 	assertSaneList(l, t)
 	assertSaneList(nl, t)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{4, 3, 2, 1, 0}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{4, 3, 2, 1, 0}, ToSlice(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = l.Prepend(0)
-	assertEmpty(l, t)
+	assert.Equal(t, 0, Size(l))
 	assertSaneList(nl, t)
-	assertSeqContents(nl, []interface{}{0}, t)
+	assert.Equal(t, []interface{}{0}, ToSlice(nl))
 }
 
 // Test prepending a Seq to the beginning of a list
@@ -77,27 +79,27 @@ func TestPrependSeq(t *T) {
 	assertSaneList(l1, t)
 	assertSaneList(l2, t)
 	assertSaneList(nl, t)
-	assertSeqContents(l1, intl1, t)
-	assertSeqContents(l2, intl2, t)
-	assertSeqContents(nl, []interface{}{0, 1, 2, 3, 4}, t)
+	assert.Equal(t, intl1, ToSlice(l1))
+	assert.Equal(t, intl2, ToSlice(l2))
+	assert.Equal(t, []interface{}{0, 1, 2, 3, 4}, ToSlice(nl))
 
 	// Degenerate cases
 	blank1 := NewList()
 	blank2 := NewList()
 	nl = blank1.PrependSeq(blank2)
-	assertEmpty(blank1, t)
-	assertEmpty(blank2, t)
-	assertEmpty(nl, t)
+	assert.Equal(t, 0, Size(blank1))
+	assert.Equal(t, 0, Size(blank2))
+	assert.Equal(t, 0, Size(nl))
 
 	nl = blank1.PrependSeq(l1)
-	assertEmpty(blank1, t)
+	assert.Equal(t, 0, Size(blank1))
 	assertSaneList(nl, t)
-	assertSeqContents(nl, intl1, t)
+	assert.Equal(t, intl1, ToSlice(nl))
 
 	nl = l1.PrependSeq(blank1)
-	assertEmpty(blank1, t)
+	assert.Equal(t, 0, Size(blank1))
 	assertSaneList(nl, t)
-	assertSeqContents(nl, intl1, t)
+	assert.Equal(t, intl1, ToSlice(nl))
 }
 
 // Test appending to the end of a List
@@ -108,23 +110,23 @@ func TestAppend(t *T) {
 	nl := l.Append(0)
 	assertSaneList(l, t)
 	assertSaneList(nl, t)
-	assertSeqContents(l, intl, t)
-	assertSeqContents(nl, []interface{}{3, 2, 1, 0}, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, []interface{}{3, 2, 1, 0}, ToSlice(nl))
 
 	// Edge case (algorithm gets weird here)
 	l = NewList(1)
 	nl = l.Append(0)
 	assertSaneList(l, t)
 	assertSaneList(nl, t)
-	assertSeqContents(l, []interface{}{1}, t)
-	assertSeqContents(nl, []interface{}{1, 0}, t)
+	assert.Equal(t, []interface{}{1}, ToSlice(l))
+	assert.Equal(t, []interface{}{1, 0}, ToSlice(nl))
 
 	// Degenerate case
 	l = NewList()
 	nl = l.Append(0)
-	assertEmpty(l, t)
+	assert.Equal(t, 0, Size(l))
 	assertSaneList(nl, t)
-	assertSeqContents(nl, []interface{}{0}, t)
+	assert.Equal(t, []interface{}{0}, ToSlice(nl))
 }
 
 // Test retrieving items from a List
@@ -134,21 +136,21 @@ func TestNth(t *T) {
 	l := NewList(intl...)
 	r, ok := l.Nth(3)
 	assertSaneList(l, t)
-	assertSeqContents(l, intl, t)
-	assertValue(r, 6, t)
-	assertValue(ok, true, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, 6, r)
+	assert.Equal(t, true, ok)
 
 	// Normal case, out of bounds
 	r, ok = l.Nth(8)
 	assertSaneList(l, t)
-	assertSeqContents(l, intl, t)
-	assertValue(r, nil, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, intl, ToSlice(l))
+	assert.Equal(t, nil, r)
+	assert.Equal(t, false, ok)
 
 	// Degenerate case
 	l = NewList()
 	r, ok = l.Nth(0)
-	assertEmpty(l, t)
-	assertValue(r, nil, t)
-	assertValue(ok, false, t)
+	assert.Equal(t, 0, Size(l))
+	assert.Equal(t, nil, r)
+	assert.Equal(t, false, ok)
 }
