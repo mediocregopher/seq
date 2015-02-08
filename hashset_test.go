@@ -1,8 +1,6 @@
 package seq
 
-import (
-	. "testing"
-)
+import . "testing"
 
 // Test creating a Set and calling the Seq interface methods on it
 func TestSetSeq(t *T) {
@@ -130,6 +128,10 @@ func TestSetSize(t *T) {
 	s := NewSet()
 	assertValue(s.Size(), uint64(0), t)
 
+	// Make sure setting on an empty Set produces the correct size
+	s, _ = s.SetVal(0)
+	assertValue(s.Size(), uint64(1), t)
+
 	// Initialization case
 	s = NewSet(0, 1, 2)
 	assertValue(s.Size(), uint64(3), t)
@@ -151,7 +153,6 @@ func TestSetSize(t *T) {
 	assertValue(s.Size(), uint64(2), t)
 	s, _ = s.SetVal(5)
 	assertValue(s.Size(), uint64(3), t)
-
 }
 
 // Test that Union functions properly

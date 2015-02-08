@@ -204,7 +204,11 @@ func (set *Set) internalSetVal(val interface{}, i uint32) (*Set, bool) {
 func (set *Set) SetVal(val interface{}) (*Set, bool) {
 	nset, ok := set.internalSetVal(val, 0)
 	if ok {
-		nset.size++
+		if set == nil {
+			nset.size = 1
+		} else {
+			nset.size = set.size + 1
+		}
 	}
 	return nset, ok
 }
