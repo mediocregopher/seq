@@ -26,6 +26,43 @@ func NewList(els ...interface{}) *List {
 	return cur
 }
 
+// Hash implements the Hash method for the Setable interface
+func (l *List) Hash(i uint32) uint32 {
+	sum := uint32(0)
+	s := Seq(l)
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); !ok {
+			return sum
+		}
+		sum += hash(el, i)
+	}
+}
+
+// Equal implements Equal for the Setable and Comparable interfaces
+func (l *List) Equal(v interface{}) bool {
+	l2, ok := v.(*List)
+	if !ok {
+		return false
+	}
+
+	s, s2 := Seq(l), Seq(l2)
+	var ok2 bool
+	var el, el2 interface{}
+	for {
+		el, s, ok = s.FirstRest()
+		el2, s2, ok2 = s2.FirstRest()
+		if !ok && !ok2 {
+			return true
+		} else if ok != ok2 {
+			return false
+		} else if !equal(el, el2) {
+			return false
+		}
+	}
+}
+
 // FirstRest is an implementation of FirstRest for Seq interface. Completes in
 // O(1) time.
 func (l *List) FirstRest() (interface{}, Seq, bool) {

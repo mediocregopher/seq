@@ -18,6 +18,18 @@ type Seq interface {
 	FirstRest() (interface{}, Seq, bool)
 }
 
+// Comparable is a Seq which can be compared to other Seqs, and returns whether
+// the two are equivalent in value, meaning one can be interchanged for the
+// other
+type Comparable interface {
+	Seq
+
+	// Equal takes in a value and returns whether the Comparable is equal to
+	// that value (the two can be interchanged for each other). If a non-Seq is
+	// passed in this should return false
+	Equal(interface{}) bool
+}
+
 // Size returns the number of elements contained in the data structure. In
 // general this completes in O(N) time, except for Set and HashMap for which it
 // completes in O(1)

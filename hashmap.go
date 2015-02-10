@@ -56,6 +56,35 @@ func NewHashMap(kvs ...*KV) *HashMap {
 	}
 }
 
+// Hash implements the Hash method for the Setable interface
+func (hm *HashMap) Hash(i uint32) uint32 {
+	return hm.set.Hash(i) // good enough
+}
+
+// Equal implements the Equal method for the Comparable and Setable interfaces
+func (hm *HashMap) Equal(v interface{}) bool {
+	hm2, ok := v.(*HashMap)
+	if !ok {
+		return false
+	}
+	if hm.Size() != hm2.Size() {
+		return false
+	}
+
+	s := Seq(hm)
+	var el interface{}
+	for {
+		el, s, ok = s.FirstRest()
+		if !ok {
+			return true
+		}
+		kv := el.(*KV)
+		if v2, ok := hm2.Get(kv.Key); !ok || !equal(kv.Val, v2) {
+			return false
+		}
+	}
+}
+
 // FirstRest is an implementation of FirstRest for Seq interface. First return
 // value will always be a *KV or nil. Completes in O(log(N)) time.
 func (hm *HashMap) FirstRest() (interface{}, Seq, bool) {

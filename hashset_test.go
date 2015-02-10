@@ -246,3 +246,37 @@ func TestSymDifference(t *T) {
 	assertSeqContentsSet(t, ints2, s2)
 	assertSeqContentsSet(t, intsd, sd)
 }
+
+// Test that two sets compare equality correctly
+func TestSetEqual(t *T) {
+	// Degenerate case
+	s1, s2 := NewSet(), NewSet()
+	assert.Equal(t, true, s1.Equal(s2))
+	assert.Equal(t, true, s2.Equal(s1))
+
+	// False with different sizes
+	s1, _ = s1.SetVal(1)
+	assert.Equal(t, false, s1.Equal(s2))
+	assert.Equal(t, false, s2.Equal(s1))
+
+	// False with same sizes
+	s2, _ = s2.SetVal(2)
+	assert.Equal(t, false, s1.Equal(s2))
+	assert.Equal(t, false, s2.Equal(s1))
+
+	// Now true
+	s1, _ = s1.SetVal(2)
+	s2, _ = s2.SetVal(1)
+	assert.Equal(t, true, s1.Equal(s2))
+	assert.Equal(t, true, s2.Equal(s1))
+
+	// False with embedded set
+	s1, _ = s1.SetVal(NewSet(3))
+	assert.Equal(t, false, s1.Equal(s2))
+	assert.Equal(t, false, s2.Equal(s1))
+
+	// True with embedded set
+	s2, _ = s2.SetVal(NewSet(3))
+	assert.Equal(t, true, s1.Equal(s2))
+	assert.Equal(t, true, s2.Equal(s1))
+}

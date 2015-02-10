@@ -1,6 +1,7 @@
 package seq
 
 import (
+	"bytes"
 	"fmt"
 	"hash/crc32"
 	"reflect"
@@ -30,31 +31,35 @@ func hash(v interface{}, i uint32) uint32 {
 	case Setable:
 		return vt.Hash(i) % ARITY
 
-	case uint:
-		return uint32(vt) % ARITY
-	case uint8:
-		return uint32(vt) % ARITY
 	case uint32:
-		return uint32(vt) % ARITY
+		return (i + vt) % ARITY
+
+	case uint:
+		return hash(uint32(vt), i)
+	case uint8:
+		return hash(uint32(vt), i)
 	case uint64:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case int:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case int8:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case int16:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case int32:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case int64:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case float32:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 	case float64:
-		return uint32(vt) % ARITY
+		return hash(uint32(vt), i)
 
 	case string:
-		return crc32.ChecksumIEEE([]byte(vt)) % ARITY
+		return hash([]byte(vt), i)
+
+	case []rune:
+		return hash([]byte(string(vt)), i)
 
 	case []byte:
 		return crc32.ChecksumIEEE(vt) % ARITY
@@ -65,23 +70,30 @@ func hash(v interface{}, i uint32) uint32 {
 	}
 }
 
-// Returns whether two values (potentially Setable's) are equivalent
-func equal(v1, v2 interface{}) bool {
+// Some equalities need one side to a be a type, and sometimes don't care about
+// the other side or need it to be a different type. This function makes those
+// comparisons in a single direction, and will be called twice in equal, once
+// with one direction and once with the other
+func equalDirected(v1, v2 interface{}) bool {
 	if v1t, ok := v1.(Setable); ok {
 		return v1t.Equal(v2)
-	} else if v2t, ok := v2.(Setable); ok {
-		return v2t.Equal(v1)
+	} else if v1t, ok := v1.(Comparable); ok {
+		if v2t, ok := v2.(Seq); ok {
+			return v1t.Equal(v2t)
+		}
+	}
+	return false
+}
+
+// Returns whether two values (potentially Setable's) are equivalent
+func equal(v1, v2 interface{}) bool {
+	if equalDirected(v1, v2) {
+		return true
+	} else if equalDirected(v2, v1) {
+		return true
 	} else if v1t, ok := v1.([]byte); ok {
 		if v2t, ok := v2.([]byte); ok {
-			if len(v1t) != len(v2t) {
-				return false
-			}
-			for i := range v1t {
-				if v1t[i] != v2t[i] {
-					return false
-				}
-			}
-			return true
+			return bytes.Equal(v1t, v2t)
 		}
 		return false
 	}
@@ -129,6 +141,42 @@ func NewSet(vals ...interface{}) *Set {
 	}
 	set.size = uint64(len(vals))
 	return set
+}
+
+// Hash implements the Hash method for the Setable interface
+func (set *Set) Hash(i uint32) uint32 {
+	sum := uint32(0)
+	s := Seq(set)
+	var el interface{}
+	var ok bool
+	for {
+		if el, s, ok = s.FirstRest(); !ok {
+			return sum
+		}
+		sum += hash(el, i)
+	}
+}
+
+// Equal implements the Equal method for the Comparable and Setable interfaces
+func (set *Set) Equal(v interface{}) bool {
+	set2, ok := v.(*Set)
+	if !ok {
+		return false
+	}
+	if set.Size() != set2.Size() {
+		return false
+	}
+
+	sset := Seq(set)
+	var el interface{}
+	for {
+		el, sset, ok = sset.FirstRest()
+		if !ok {
+			return true
+		} else if _, ok = set2.GetVal(el); !ok {
+			return false
+		}
+	}
 }
 
 // Methods marked as "dirty" operate on the node in place, and potentially

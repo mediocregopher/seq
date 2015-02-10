@@ -154,3 +154,37 @@ func TestNth(t *T) {
 	assert.Equal(t, nil, r)
 	assert.Equal(t, false, ok)
 }
+
+// Test that two lists compare equality correctly
+func TestListEqual(t *T) {
+	// Degenerate case
+	l1, l2 := NewList(), NewList()
+	assert.Equal(t, true, l1.Equal(l2))
+	assert.Equal(t, true, l2.Equal(l1))
+
+	// False with different sizes
+	l1 = l1.Prepend(1)
+	assert.Equal(t, false, l1.Equal(l2))
+	assert.Equal(t, false, l2.Equal(l1))
+
+	// False with same sizes
+	l2 = l2.Prepend(2)
+	assert.Equal(t, false, l1.Equal(l2))
+	assert.Equal(t, false, l2.Equal(l1))
+
+	// Now true
+	l1 = l1.Prepend(2)
+	l2 = l2.Append(1)
+	assert.Equal(t, true, l1.Equal(l2))
+	assert.Equal(t, true, l2.Equal(l1))
+
+	// False with embedded list
+	l1 = l1.Prepend(NewList(3))
+	assert.Equal(t, false, l1.Equal(l2))
+	assert.Equal(t, false, l2.Equal(l1))
+
+	// True with embedded set
+	l2 = l2.Prepend(NewList(3))
+	assert.Equal(t, true, l1.Equal(l2))
+	assert.Equal(t, true, l2.Equal(l1))
+}

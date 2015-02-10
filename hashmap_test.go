@@ -113,3 +113,43 @@ func TestHashMapDel(t *T) {
 	assert.Equal(t, false, ok)
 
 }
+
+// Test that two hashmaps compare equality correctly
+func TestHashMapEqual(t *T) {
+	// Degenerate case
+	hm1, hm2 := NewHashMap(), NewHashMap()
+	assert.Equal(t, true, hm1.Equal(hm2))
+	assert.Equal(t, true, hm2.Equal(hm1))
+
+	// False with different sizes
+	hm1, _ = hm1.Set("one", 1)
+	assert.Equal(t, false, hm1.Equal(hm2))
+	assert.Equal(t, false, hm2.Equal(hm1))
+
+	// False with same sizes
+	hm2, _ = hm2.Set("two", 2)
+	assert.Equal(t, false, hm1.Equal(hm2))
+	assert.Equal(t, false, hm2.Equal(hm1))
+
+	// Now true
+	hm1, _ = hm1.Set("two", 2)
+	hm2, _ = hm2.Set("one", 1)
+	assert.Equal(t, true, hm1.Equal(hm2))
+	assert.Equal(t, true, hm2.Equal(hm1))
+
+	// False with embedded HashMap
+	hm1, _ = hm1.Set(NewHashMap().Set("three", 3))
+	assert.Equal(t, false, hm1.Equal(hm2))
+	assert.Equal(t, false, hm2.Equal(hm1))
+
+	// True with embedded set
+	hm2, _ = hm2.Set(NewHashMap().Set("three", 3))
+	assert.Equal(t, true, hm1.Equal(hm2))
+	assert.Equal(t, true, hm2.Equal(hm1))
+
+	// False with same key, different value
+	hm1, _ = hm1.Set("four", 4)
+	hm2, _ = hm2.Set("four", 5)
+	assert.Equal(t, false, hm1.Equal(hm2))
+	assert.Equal(t, false, hm2.Equal(hm1))
+}
