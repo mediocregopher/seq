@@ -15,8 +15,9 @@ import (
 type Setable interface {
 
 	// Returns an integer for the value. For two equivalent values (as defined
-	// by Equal) Hash(i) should always return the same number. For multiple
-	// values of i, Hash should return different values if possible.
+	// by Equal) Hash(i) should always return the same number if given the same
+	// i. For multiple values of i, Hash should return different values if
+	// possible.
 	Hash(uint32) uint32
 
 	// Given an arbitrary value found in a Set, returns whether or not the two
